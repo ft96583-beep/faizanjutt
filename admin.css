@@ -1,0 +1,148 @@
+/* ===========================
+   ADMIN PANEL - PREMIUM CSS
+=========================== */
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#050816;
+background-image:
+radial-gradient(circle at top left,#0f4cff33,transparent 40%),
+radial-gradient(circle at bottom right,#00d9ff22,transparent 40%);
+overflow:hidden;
+}
+
+.login-container{
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
+}
+
+.login-box{
+width:100%;
+max-width:420px;
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(18px);
+border:1px solid rgba(255,255,255,.15);
+border-radius:20px;
+padding:40px 30px;
+text-align:center;
+box-shadow:0 0 35px rgba(0,170,255,.25);
+animation:fadeUp .8s ease;
+}
+
+.logo{
+width:90px;
+height:90px;
+margin:auto;
+border-radius:50%;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#00bfff;
+color:#fff;
+font-size:40px;
+box-shadow:0 0 25px #00bfff;
+margin-bottom:20px;
+}
+
+.login-box h1{
+color:#fff;
+font-size:30px;
+margin-bottom:8px;
+}
+
+.login-box p{
+color:#bbb;
+margin-bottom:30px;
+font-size:15px;
+}
+
+.input-box{
+position:relative;
+margin-bottom:20px;
+}
+
+.input-box i{
+position:absolute;
+left:18px;
+top:50%;
+transform:translateY(-50%);
+color:#00bfff;
+font-size:18px;
+}
+
+.input-box input{
+width:100%;
+padding:15px 15px 15px 50px;
+background:#111827;
+border:1px solid #2a2a2a;
+border-radius:12px;
+color:#fff;
+font-size:15px;
+outline:none;
+transition:.3s;
+}
+
+.input-box input:focus{
+border-color:#00bfff;
+box-shadow:0 0 15px rgba(0,191,255,.4);
+}
+button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:12px;
+background:#00bfff;
+color:#fff;
+font-size:16px;
+font-weight:600;
+cursor:pointer;
+transition:.3s;
+box-shadow:0 0 20px rgba(0,191,255,.4);
+}
+button:hover{
+background:#0099ff;
+transform:translateY(-3px);
+box-shadow:0 0 30px rgba(0,191,255,.7);
+}
+button:active{transform:scale(.98);}
+#message{margin-top:18px;color:#00ff99;font-size:14px;font-weight:500;text-align:center;min-height:20px;}
+a{color:#00bfff;text-decoration:none;transition:.3s;}
+a:hover{color:#fff;}
+input::placeholder{color:#888;}
+@media(max-width:768px){
+.login-box{padding:30px 20px;}
+.logo{width:75px;height:75px;font-size:34px;}
+.login-box h1{font-size:26px;}
+button{padding:14px;font-size:15px;}
+}
+body::before{
+content:"";position:fixed;top:-150px;left:-150px;width:350px;height:350px;background:#00bfff;opacity:.12;filter:blur(120px);border-radius:50%;animation:float1 8s infinite alternate;
+}
+body::after{
+content:"";position:fixed;bottom:-150px;right:-150px;width:350px;height:350px;background:#0066ff;opacity:.12;filter:blur(120px);border-radius:50%;animation:float2 8s infinite alternate;
+}
+.dashboard{padding:30px;color:#fff;}
+.dashboard h1{font-size:30px;margin-bottom:25px;}
+.card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(18px);border-radius:18px;padding:20px;margin-bottom:20px;box-shadow:0 0 20px rgba(0,191,255,.18);transition:.3s;}
+.card:hover{transform:translateY(-5px);box-shadow:0 0 30px rgba(0,191,255,.35);}
+.card h2{margin-bottom:15px;font-size:22px;color:#00bfff;}
+.card input,.card textarea{width:100%;padding:12px;margin-top:10px;margin-bottom:15px;border:none;border-radius:10px;background:#111827;color:#fff;outline:none;font-size:15px;resize:vertical;}
+.card textarea{min-height:120px;}
+.save-btn{background:#00bfff;color:#fff;border:none;padding:14px 20px;border-radius:10px;cursor:pointer;font-size:16px;font-weight:600;transition:.3s;}
+.save-btn:hover{background:#0099ff;box-shadow:0 0 20px rgba(0,191,255,.6);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(40px);}to{opacity:1;transform:translateY(0);}}
+@keyframes float1{0%{transform:translate(0,0);}100%{transform:translate(80px,60px);}}
+@keyframes float2{0%{transform:translate(0,0);}100%{transform:translate(-80px,-60px);}}
