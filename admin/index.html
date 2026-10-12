@@ -1,0 +1,2709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin · Faizan Jutt 272</title>
+<style>
+/* ============================================================
+   Faizan Jutt 272 — Admin panel (dark, premium)
+   Single self-contained file. No external CSS/JS except:
+   ../assets/js/config.js and the Supabase UMD client.
+   ============================================================ */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;
+  --main:#111111;
+  --card:#1a1a1a;
+  --card2:#1f1f1f;
+  --input:#141414;
+  --border:#262626;
+  --border-soft:#333333;
+  --text:#f5f5f5;
+  --muted:#a1a1aa;
+  --muted-dim:#6d6d76;
+  --accent:#f27d26;
+  --accent-deep:#d9622b;
+  --accent-soft:rgba(242,125,38,.12);
+  --green:#34d399;
+  --red:#ef4444;
+  --gold:#fbbf24;
+  --blue:#60a5fa;
+  --radius:12px;
+  --shadow:0 10px 30px rgba(0,0,0,.45);
+}
+html{scroll-behavior:smooth}
+body{background:var(--main);color:var(--text);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:15px;line-height:1.55;min-height:100vh;-webkit-font-smoothing:antialiased}
+.hidden{display:none!important}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+code{background:#242424;border:1px solid var(--border);border-radius:6px;padding:1px 7px;font-size:.85em;color:var(--accent);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.ic{width:18px;height:18px;flex:none}
+::selection{background:rgba(242,125,38,.35)}
+
+/* ---------- scrollbars ---------- */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#2e2e2e;border-radius:99px;border:2px solid var(--main)}
+::-webkit-scrollbar-thumb:hover{background:#3d3d3d}
+
+/* ---------- toasts ---------- */
+#toast-wrap{position:fixed;top:18px;right:18px;z-index:700;display:flex;flex-direction:column;gap:10px;max-width:min(92vw,380px)}
+.toast{background:#202020;border:1px solid var(--border-soft);border-left:4px solid var(--accent);
+  color:var(--text);padding:12px 16px;border-radius:10px;box-shadow:var(--shadow);font-size:.92rem;
+  animation:slideIn .25s ease}
+.toast.success{border-left-color:var(--green)}
+.toast.error{border-left-color:var(--red)}
+@keyframes slideIn{from{transform:translateX(30px);opacity:0}to{transform:none;opacity:1}}
+
+/* ---------- setup banner ---------- */
+.setup-banner{display:flex;gap:14px;align-items:center;background:#231407;border-bottom:1px solid #5b3a1e;
+  color:#fbbf24;padding:14px 20px;position:sticky;top:0;z-index:300;font-size:.93rem}
+.setup-banner .sb-text{flex:1;line-height:1.5}
+.setup-banner code{background:#31200f;border-color:#5b3a1e}
+
+/* ---------- login ---------- */
+.login-view{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:
+    radial-gradient(760px 440px at 18% 8%,rgba(242,125,38,.10),transparent 60%),
+    radial-gradient(700px 500px at 85% 90%,rgba(96,165,250,.06),transparent 60%),
+    #0a0a0a}
+.login-card{width:100%;max-width:400px;background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:38px 34px;box-shadow:var(--shadow)}
+.login-brand{text-align:center;margin-bottom:26px}
+.login-logo{display:inline-flex;align-items:center;justify-content:center;width:58px;height:58px;
+  border-radius:15px;background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+  color:#16100a;font-weight:800;font-size:1.25rem;margin-bottom:16px;box-shadow:0 6px 18px rgba(242,125,38,.35)}
+.login-brand h1{font-size:1.4rem;letter-spacing:-.01em}
+.login-brand h1 .o272{color:var(--accent)}
+.login-brand p{color:var(--muted);margin-top:5px;font-size:.92rem}
+.login-note{margin-top:18px;font-size:.8rem;color:var(--muted-dim);text-align:center;line-height:1.6}
+.form-error{color:#f87171;font-size:.86rem;margin:10px 0;min-height:1.2em}
+.btn-block{width:100%}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;
+  border-radius:9px;padding:10px 18px;font-weight:600;font-size:.88rem;cursor:pointer;transition:background .15s,transform .1s;
+  font-family:inherit;white-space:nowrap}
+.btn:active:not(:disabled){transform:scale(.98)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:#181006}
+.btn-primary:hover:not(:disabled){background:#ff8a3d}
+.btn-ghost{background:transparent;border-color:var(--border-soft);color:var(--text)}
+.btn-ghost:hover:not(:disabled){background:#222}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover:not(:disabled){background:#dc2626}
+.btn-danger-outline{background:transparent;border-color:rgba(239,68,68,.45);color:#f87171}
+.btn-danger-outline:hover:not(:disabled){background:rgba(239,68,68,.12)}
+.btn-sm{padding:6px 12px;font-size:.79rem;border-radius:7px}
+.file-btn{cursor:pointer}
+
+/* ---------- fields ---------- */
+.field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+.field>span{font-size:.74rem;color:var(--muted);font-weight:600;letter-spacing:.07em;text-transform:uppercase}
+.field input,.field textarea,.field select{background:var(--input);border:1px solid #2b2b2b;color:var(--text);
+  padding:11px 13px;font-size:.94rem;font-family:inherit;width:100%;border-radius:9px;transition:border-color .15s,box-shadow .15s}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(242,125,38,.18)}
+.field textarea{resize:vertical;min-height:96px;line-height:1.6}
+.field input[type=file]{padding:9px;cursor:pointer}
+.field input::placeholder,.field textarea::placeholder{color:#55555e}
+.field input:disabled,.field textarea:disabled{background:#1c1c1c;color:var(--muted-dim)}
+.hint{font-size:.8rem;color:var(--muted-dim);margin-top:-8px;margin-bottom:14px}
+.check-field{display:flex;align-items:center;gap:10px;margin:6px 0 14px;cursor:pointer;color:var(--text);font-size:.94rem}
+.check-field input{width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+.form-grid .full{grid-column:1/-1}
+.search{background:var(--input);border:1px solid #2b2b2b;border-radius:9px;padding:9px 14px;color:var(--text);
+  font-size:.9rem;font-family:inherit;min-width:200px}
+.search:focus{outline:none;border-color:var(--accent)}
+.search::placeholder{color:#55555e}
+
+/* ---------- app shell ---------- */
+.dbwarn{display:flex;gap:12px;align-items:flex-start;background:#2a1503;border:1px solid #b25a1b;
+  border-radius:12px;padding:14px 16px;margin:0 0 18px;color:#ffd9ad;font-size:.88rem;line-height:1.55}
+.dbwarn b{color:#ffb066}
+.dbwarn .dbwarn-x{margin-left:auto;background:none;border:1px solid #b25a1b;color:#ffb066;border-radius:8px;
+  padding:4px 10px;cursor:pointer;font-size:.78rem;flex:none}
+.dbwarn code{background:#1a0d02;padding:1px 7px;border-radius:6px;color:#ffcf99;font-size:.8rem}
+.app{display:grid;grid-template-columns:258px 1fr;grid-template-rows:64px 1fr;
+  grid-template-areas:"side top" "side main";min-height:100vh}
+.topbar{grid-area:top;display:flex;align-items:center;gap:14px;padding:0 22px;
+  background:rgba(17,17,17,.92);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+#topbar-title{font-size:1.08rem;font-weight:700;flex:1;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topbar-actions{display:flex;gap:10px;align-items:center}
+.hamburger{display:none;background:none;border:1px solid var(--border-soft);border-radius:8px;color:var(--text);
+  font-size:1.15rem;cursor:pointer;padding:6px 10px}
+.sidebar{grid-area:side;background:var(--bg);border-right:1px solid var(--border);
+  position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;z-index:200}
+.side-brand{display:flex;align-items:center;gap:12px;padding:19px 18px;border-bottom:1px solid var(--border)}
+.side-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+  display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#16100a;font-size:.95rem;flex:none}
+.side-brand b{font-size:.95rem;letter-spacing:-.01em;display:block;line-height:1.25}
+.side-brand small{color:var(--muted-dim);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase}
+#nav{padding:8px 8px 24px;flex:1}
+.nav-group-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted-dim);
+  padding:18px 12px 7px;font-weight:700}
+.nav-item{display:flex;align-items:center;gap:12px;width:100%;background:none;border:none;border-radius:9px;
+  color:var(--muted);padding:10px 12px;font-size:.9rem;font-weight:500;cursor:pointer;text-align:left;
+  font-family:inherit;margin-bottom:2px;transition:background .12s,color .12s}
+.nav-item .ic{color:#7a7a84;transition:color .12s}
+.nav-item:hover{background:#161616;color:var(--text)}
+.nav-item.active{background:var(--accent-soft);color:#fff}
+.nav-item.active .ic{color:var(--accent)}
+.nbadge{background:var(--red);color:#fff;font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:99px;margin-left:auto}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:150}
+.content{grid-area:main;padding:30px;min-width:0}
+.content-inner{max-width:1180px;margin:0 auto}
+
+/* ---------- tabs ---------- */
+.tab{display:none;animation:fadeIn .22s ease}
+.tab.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.tab-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.tab-title{font-size:1.55rem;letter-spacing:-.02em;font-weight:800}
+.tab-sub{color:var(--muted);margin-top:3px;font-size:.92rem}
+.tab-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.section-h{margin:28px 0 14px;font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+
+/* ---------- cards / stats ---------- */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.card-pad{padding:22px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:6px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden}
+.stat-card::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent}
+.stat-card.hl::after{background:var(--accent)}
+.stat-num{font-size:2.05rem;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.stat-num.orange{color:var(--accent)}
+.stat-label{color:var(--muted);font-size:.8rem;margin-top:6px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.stat-delta{font-size:.8rem;margin-top:8px;color:var(--muted-dim)}
+.stat-delta b{color:var(--green);font-weight:700}
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+.quick-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;color:var(--text);
+  cursor:pointer;font-size:.85rem;font-weight:600;display:flex;flex-direction:column;gap:10px;align-items:flex-start;
+  font-family:inherit;transition:border-color .15s,transform .1s;text-align:left}
+.quick-card .ic{width:20px;height:20px;color:var(--accent)}
+.quick-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+
+/* ---------- tables ---------- */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.table-wrap{overflow:auto;max-height:600px}
+.data-table{width:100%;border-collapse:collapse;min-width:620px}
+.data-table th{text-align:left;padding:13px 16px;color:var(--muted);font-size:.72rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.09em;background:var(--card2);position:sticky;top:0;z-index:2;border-bottom:1px solid var(--border-soft)}
+.data-table td{padding:12px 16px;border-top:1px solid var(--border);font-size:.92rem;vertical-align:middle}
+.data-table tbody tr:first-child td{border-top:none}
+.data-table tbody tr:hover td{background:#1e1e1e}
+.actions-col{width:190px;white-space:nowrap}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap}
+.empty{color:var(--muted-dim);padding:26px!important;text-align:center;font-size:.92rem}
+.clip{max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85em;color:var(--muted)}
+.thumb-sm{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--border-soft);background:#222}
+.url-cell{max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.url-cell a{color:var(--accent)}
+
+/* ---------- pills / chips / badges ---------- */
+.pill{display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border-radius:999px;font-size:.75rem;font-weight:700;white-space:nowrap}
+.pill-green{background:rgba(52,211,153,.13);color:#34d399}
+.pill-red{background:rgba(239,68,68,.13);color:#f87171}
+.pill-orange{background:rgba(242,125,38,.15);color:#f5a05e}
+.pill-blue{background:rgba(96,165,250,.13);color:#93c5fd}
+.pill-gray{background:rgba(161,161,170,.13);color:#a1a1aa}
+.chip{display:inline-flex;align-items:center;gap:8px;background:#202020;border:1px solid var(--border-soft);
+  border-radius:999px;padding:7px 14px;font-size:.85rem;margin:0 8px 8px 0}
+.chip b{color:var(--accent)}
+
+/* ---------- bars ---------- */
+.bar-row{display:grid;grid-template-columns:minmax(140px,240px) 1fr 64px;gap:14px;align-items:center;margin-bottom:11px;font-size:.9rem}
+.bar-row .bl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
+.bar-row .bv{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar-track{height:10px;background:#242424;border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--accent-deep),var(--accent));border-radius:99px;min-width:2px;transition:width .4s ease}
+.bar-fill.blue{background:linear-gradient(90deg,#2563eb,#60a5fa)}
+.bar-fill.green{background:linear-gradient(90deg,#059669,#34d399)}
+
+/* ---------- forms ---------- */
+.panel-form{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:26px;max-width:940px;box-shadow:var(--shadow)}
+.form-actions{margin-top:8px;display:flex;gap:10px;flex-wrap:wrap}
+.upload-progress{color:var(--gold);font-size:.88rem;margin:10px 0;font-family:ui-monospace,Menlo,monospace}
+.preview{max-width:230px;max-height:170px;border-radius:10px;border:1px solid var(--border-soft);margin:10px 0;display:block;background:#222}
+.preview-row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+
+/* ---------- project cards ---------- */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:16px}
+.proj-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
+  display:flex;flex-direction:column;transition:border-color .15s,transform .12s}
+.proj-card:hover{border-color:var(--border-soft);transform:translateY(-2px)}
+.proj-card .pcover{width:100%;height:150px;object-fit:cover;background:#222;display:block}
+.proj-card .pcover-ph{height:150px;display:flex;align-items:center;justify-content:center;color:var(--muted-dim);background:#1c1c1c}
+.proj-body{padding:15px;display:flex;flex-direction:column;gap:7px;flex:1}
+.proj-name{font-weight:700;display:flex;align-items:center;gap:8px}
+.proj-cat{color:var(--muted-dim);font-size:.8rem;text-transform:uppercase;letter-spacing:.06em}
+.proj-actions{margin-top:auto;display:flex;gap:8px;padding-top:8px}
+
+/* ---------- modals ---------- */
+.modal-scrim{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#161616;border:1px solid var(--border-soft);border-radius:14px;padding:28px;width:100%;max-width:560px;
+  max-height:92vh;overflow-y:auto;animation:popIn .2s ease;box-shadow:var(--shadow)}
+.modal-lg{max-width:780px}
+.modal-sm{max-width:420px}
+@keyframes popIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.modal h3{margin-bottom:18px;font-size:1.15rem;letter-spacing:-.01em}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:10px}
+.thumb-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.thumb-row img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--border-soft)}
+.thumb-item{position:relative}
+.thumb-item button{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;border:none;
+  background:var(--red);color:#fff;cursor:pointer;font-size:.8rem;line-height:1;display:flex;align-items:center;justify-content:center}
+#modal-confirm p{color:var(--muted);font-size:.93rem;margin-bottom:6px}
+#generic-fields{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+#generic-fields .full{grid-column:1/-1}
+#generic-fields .check-field{grid-column:1/-1}
+@media(max-width:560px){#generic-fields{grid-template-columns:1fr}}
+
+/* ---------- media ---------- */
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:14px}
+.media-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:transform .12s}
+.media-card:hover{transform:translateY(-2px)}
+.media-card .mprev{width:100%;height:130px;object-fit:cover;background:#1c1c1c;display:flex;align-items:center;justify-content:center;color:var(--muted-dim)}
+.media-info{padding:11px;display:flex;flex-direction:column;gap:9px}
+.media-name{font-size:.8rem;color:var(--muted);word-break:break-all;font-family:ui-monospace,Menlo,monospace}
+.media-btns{display:flex;gap:8px}
+
+/* ---------- messages ---------- */
+.msg-list{display:flex;flex-direction:column;gap:12px;max-width:940px}
+.msg-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative}
+.msg-card.unread{border-left:3px solid var(--accent)}
+.msg-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.msg-name{font-weight:700}
+.msg-email{color:var(--muted);font-size:.85rem}
+.msg-date{color:var(--muted-dim);font-size:.78rem;font-family:ui-monospace,Menlo,monospace}
+.msg-body{line-height:1.6;white-space:pre-wrap;margin:8px 0 14px;color:#d7d7dc}
+.msg-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- misc ---------- */
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.kv{display:grid;grid-template-columns:200px 1fr;gap:8px 16px;font-size:.92rem;margin-bottom:8px}
+.kv dt{color:var(--muted)}
+.kv dd{word-break:break-word}
+.warn-box{background:#231407;border:1px solid #5b3a1e;border-radius:10px;color:#fbbf24;padding:13px 16px;font-size:.88rem;margin-bottom:18px;line-height:1.6}
+.info-box{background:#101a26;border:1px solid #1e3a5f;border-radius:10px;color:#93c5fd;padding:13px 16px;font-size:.88rem;margin-bottom:18px;line-height:1.7}
+.help-doc h4{margin:22px 0 8px;font-size:1rem;color:var(--accent)}
+.help-doc h4:first-child{margin-top:0}
+.help-doc p,.help-doc li{color:#c9c9cf;font-size:.93rem;line-height:1.7}
+.help-doc ul{padding-left:20px;margin:6px 0}
+.help-doc code{color:var(--accent)}
+.status-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px}
+.dot-ok{background:var(--green);box-shadow:0 0 8px rgba(52,211,153,.7)}
+.dot-bad{background:var(--red);box-shadow:0 0 8px rgba(239,68,68,.7)}
+.legend{display:flex;gap:18px;margin:14px 0 6px;font-size:.85rem;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+.chart-card svg{width:100%;height:auto;display:block}
+.load-more-wrap{text-align:center;padding:18px}
+.divider{height:1px;background:var(--border);margin:22px 0}
+
+/* ---------- responsive ---------- */
+@media(max-width:900px){
+  .app{grid-template-columns:1fr;grid-template-areas:"top" "main"}
+  .hamburger{display:block}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:264px;height:100vh;transform:translateX(-105%);transition:transform .25s ease;box-shadow:0 0 60px rgba(0,0,0,.6)}
+  .sidebar.open{transform:none}
+  .content{padding:20px 14px}
+  .form-grid{grid-template-columns:1fr}
+  .topbar{padding:0 14px}
+  #view-site span.vs-t{display:none}
+  .bar-row{grid-template-columns:minmax(100px,150px) 1fr 52px}
+}
+</style>
+<!-- Supabase config (real project values live here; loaded, never inlined) -->
+<script src="../assets/js/config.js" onerror="window.__configLoadFailed=true"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.4/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<!-- SVG icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+<symbol id="i-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18"/><path d="M7 21v-6M12 21V8M17 21v-10"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3l16 9-6.5 1.5L11 20 4 3z"/><path d="M13.5 12.5L20 19"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></symbol>
+<symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+<symbol id="i-trend" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></symbol>
+<symbol id="i-dev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></symbol>
+<symbol id="i-img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></symbol>
+<symbol id="i-brief" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><path d="M7 7h.01"/></symbol>
+<symbol id="i-quote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></symbol>
+<symbol id="i-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.8 2.8 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></symbol>
+<symbol id="i-help" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 015.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
+<symbol id="i-imgs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 012.1 4.2 2 2 0 014.1 2h3a2 2 0 012 1.7c.13.96.36 1.9.7 2.8a2 2 0 01-.45 2.1L8.1 9.9a16 16 0 006 6l1.3-1.25a2 2 0 012.1-.45c.9.34 1.84.57 2.8.7a2 2 0 011.7 2z"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M10.9 12.1L21 2m-4.5 4.5L19 9"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></symbol>
+<symbol id="i-dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+<symbol id="i-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></symbol>
+<symbol id="i-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6M10 14L21 3"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+</defs>
+</svg>
+
+<div id="toast-wrap" aria-live="polite"></div>
+
+<!-- ============ SETUP BANNER ============ -->
+<div id="setup-banner" class="setup-banner hidden">
+  <svg class="ic"><use href="#i-pulse"/></svg>
+  <div class="sb-text">
+    <strong>Supabase not configured.</strong>
+    Open <code>assets/js/config.js</code> and set
+    <code>SUPABASE_URL</code> + <code>SUPABASE_ANON_KEY</code> to your Supabase project values,
+    then reload this page.
+  </div>
+  <button class="btn btn-ghost btn-sm" id="sb-hide" type="button">Dismiss</button>
+</div>
+
+<!-- ============ LOGIN VIEW ============ -->
+<main id="login-view" class="login-view">
+  <div class="login-card">
+    <div class="login-brand">
+      <span class="login-logo">FJ</span>
+      <h1>Faizan Jutt <span class="o272">272</span></h1>
+      <p>Admin Panel</p>
+    </div>
+    <form id="login-form" autocomplete="off">
+      <label class="field">
+        <span>Username or Email</span>
+        <input type="text" id="login-ident" placeholder="username or email" required autocomplete="username">
+      </label>
+      <label class="field">
+        <span>Password</span>
+        <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+      </label>
+      <p id="login-error" class="form-error hidden"></p>
+      <button type="submit" id="login-btn" class="btn btn-primary btn-block">Sign In</button>
+    </form>
+    <p class="login-note">Sign in with your admin <b>username</b> (as mapped in Admin Users)<br>or your full login email.</p>
+  </div>
+</main>
+
+<!-- ============ APP VIEW ============ -->
+<div id="app-view" class="app hidden">
+  <header class="topbar">
+    <button id="hamburger" class="hamburger" type="button" aria-label="Toggle menu"><svg class="ic"><use href="#i-menu"/></svg></button>
+    <div id="topbar-title">Dashboard</div>
+    <div class="topbar-actions">
+      <button id="view-site" class="btn btn-ghost btn-sm" type="button"><svg class="ic"><use href="#i-ext"/></svg><span class="vs-t">View Site</span></button>
+      <button id="logout-btn" class="btn btn-danger-outline btn-sm" type="button">Logout</button>
+    </div>
+  </header>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="side-brand">
+      <span class="side-logo">FJ</span>
+      <div><b>Faizan Jutt 272</b><small>Admin Panel</small></div>
+    </div>
+    <nav id="nav" aria-label="Admin sections"></nav>
+  </aside>
+  <div id="sidebar-scrim" class="scrim hidden"></div>
+
+  <main class="content" id="content"><div class="content-inner">
+    <div id="dbwarn" class="dbwarn hidden"></div>
+
+    <!-- ===== 1. DASHBOARD ===== -->
+    <section class="tab active" id="tab-dashboard">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Dashboard</h2><p class="tab-sub">Site performance and content at a glance.</p></div>
+        <button class="btn btn-ghost btn-sm" id="dash-refresh" type="button">Refresh</button>
+      </div>
+      <div class="stat-grid" id="dash-stats">
+        <div class="stat-card hl"><div class="stat-num orange" id="d-pv30">–</div><div class="stat-label">Pageviews · 30d</div><div class="stat-delta" id="d-pv7">–</div></div>
+        <div class="stat-card hl"><div class="stat-num" id="d-cl30">–</div><div class="stat-label">Clicks · 30d</div><div class="stat-delta" id="d-cl7">–</div></div>
+        <div class="stat-card"><div class="stat-num" id="d-projects">–</div><div class="stat-label">Projects</div><div class="stat-delta" id="d-featured">–</div></div>
+        <div class="stat-card"><div class="stat-num" id="d-msgs">–</div><div class="stat-label">Unread Messages</div><div class="stat-delta" id="d-msgs-t">–</div></div>
+        <div class="stat-card"><div class="stat-num" id="d-subs">–</div><div class="stat-label">Subscribers</div><div class="stat-delta" id="d-subs-t">–</div></div>
+      </div>
+      <h3 class="section-h">Quick Actions</h3>
+      <div class="quick-grid">
+        <button class="quick-card" data-goto="projects" type="button"><svg class="ic"><use href="#i-folder"/></svg>Add Project</button>
+        <button class="quick-card" data-goto="blog" type="button"><svg class="ic"><use href="#i-pen"/></svg>New Blog Post</button>
+        <button class="quick-card" data-goto="skills" type="button"><svg class="ic"><use href="#i-zap"/></svg>Add Skill</button>
+        <button class="quick-card" data-goto="messages" type="button"><svg class="ic"><use href="#i-mail"/></svg>View Messages</button>
+        <button class="quick-card" data-goto="media" type="button"><svg class="ic"><use href="#i-imgs"/></svg>Upload Media</button>
+        <button class="quick-card" data-goto="analytics" type="button"><svg class="ic"><use href="#i-chart"/></svg>View Analytics</button>
+      </div>
+      <h3 class="section-h">Recent Activity</h3>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Action</th><th>Detail</th><th>Time</th></tr></thead>
+        <tbody id="dash-activity"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- ===== 2. ANALYTICS OVERVIEW ===== -->
+    <section class="tab" id="tab-analytics">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Analytics Overview</h2><p class="tab-sub">Traffic from the last 30 days (tracked by assets/js/analytics.js).</p></div>
+        <button class="btn btn-ghost btn-sm" id="analytics-refresh" type="button">Refresh</button>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card hl"><div class="stat-num orange" id="an-pv30">–</div><div class="stat-label">Pageviews · 30d</div></div>
+        <div class="stat-card hl"><div class="stat-num" id="an-cl30">–</div><div class="stat-label">Clicks · 30d</div></div>
+        <div class="stat-card"><div class="stat-num" id="an-pv7">–</div><div class="stat-label">Pageviews · 7d</div></div>
+        <div class="stat-card"><div class="stat-num" id="an-ref">–</div><div class="stat-label">Referrers</div></div>
+      </div>
+      <div class="card chart-card" style="margin-top:16px">
+        <h3 class="section-h" style="margin-top:0">Daily Traffic — Pageviews vs Clicks</h3>
+        <div class="legend"><span><i style="background:#f27d26"></i>Pageviews</span><span><i style="background:#60a5fa"></i>Clicks</span></div>
+        <div id="analytics-chart"><p class="empty">Loading…</p></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h3 class="section-h" style="margin-top:0">Top 5 Pages</h3>
+        <div id="analytics-top5"><p class="empty">Loading…</p></div>
+      </div>
+    </section>
+
+    <!-- ===== 3. PAGE VIEWS ===== -->
+    <section class="tab" id="tab-pageviews">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Page Views</h2><p class="tab-sub">Individual pageview events, newest first.</p></div>
+      </div>
+      <div class="toolbar">
+        <input class="search" id="pv-search" type="search" placeholder="Search page or referrer…">
+        <select class="search" id="pv-page-filter" style="min-width:180px"><option value="">All pages</option></select>
+      </div>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Page</th><th>Referrer</th><th>Time</th></tr></thead>
+        <tbody id="pv-tbody"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+      </table></div>
+      <div class="load-more-wrap"><button class="btn btn-ghost" id="pv-more" type="button">Load more</button></div></div>
+    </section>
+
+    <!-- ===== 4. CLICK EVENTS ===== -->
+    <section class="tab" id="tab-clicks">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Click Events</h2><p class="tab-sub">Tracked element clicks (CTA buttons, links, etc.).</p></div>
+      </div>
+      <h3 class="section-h" style="margin-top:0">Clicks per Label</h3>
+      <div id="click-chips" style="margin-bottom:18px"><p class="empty">Loading…</p></div>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Label</th><th>Page</th><th>Time</th></tr></thead>
+        <tbody id="click-tbody"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+      </table></div>
+      <div class="load-more-wrap"><button class="btn btn-ghost" id="click-more" type="button">Load more</button></div></div>
+    </section>
+
+    <!-- ===== 5. REFERRERS ===== -->
+    <section class="tab" id="tab-referrers">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Referrers</h2><p class="tab-sub">Where your visitors come from (last 30 days).</p></div>
+      </div>
+      <div class="card"><div id="ref-list"><p class="empty">Loading…</p></div></div>
+    </section>
+
+    <!-- ===== 6. DAILY TRAFFIC ===== -->
+    <section class="tab" id="tab-daily">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Daily Traffic</h2><p class="tab-sub">Per-day totals for the last 30 days, newest first.</p></div>
+      </div>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Date</th><th>Pageviews</th><th>Clicks</th><th>Total</th></tr></thead>
+        <tbody id="daily-tbody"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- ===== 7. TOP PAGES ===== -->
+    <section class="tab" id="tab-toppages">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Top Pages</h2><p class="tab-sub">Pages ranked by pageviews in the last 30 days.</p></div>
+      </div>
+      <div class="card"><div id="toppages-list"><p class="empty">Loading…</p></div></div>
+    </section>
+
+    <!-- ===== 8. DEVICES ===== -->
+    <section class="tab" id="tab-devices">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Devices</h2><p class="tab-sub">Visitor browsers and operating systems (last 30 days).</p></div>
+      </div>
+      <div class="form-grid" style="align-items:start">
+        <div class="card"><h3 class="section-h" style="margin-top:0">Browsers</h3><div id="dev-browsers"><p class="empty">Loading…</p></div></div>
+        <div class="card"><h3 class="section-h" style="margin-top:0">Operating Systems</h3><div id="dev-os"><p class="empty">Loading…</p></div></div>
+      </div>
+    </section>
+
+    <!-- ===== 9. HERO ===== -->
+    <section class="tab" id="tab-hero">
+      <div class="tab-head"><div><h2 class="tab-title">Hero Section</h2><p class="tab-sub">The top banner of the homepage.</p></div></div>
+      <form id="hero-form" class="panel-form">
+        <div class="form-grid">
+          <label class="field"><span>Greeting</span><input id="hero-greeting" type="text" placeholder="Hello, I'm"></label>
+          <label class="field"><span>Name</span><input id="hero-name" type="text" placeholder="Faizan Jutt 272"></label>
+        </div>
+        <label class="field"><span>Roles (one per line)</span><textarea id="hero-roles" rows="3" placeholder="Full Stack Web Developer"></textarea></label>
+        <label class="field"><span>Description</span><textarea id="hero-description" rows="4"></textarea></label>
+        <div class="form-grid">
+          <label class="field"><span>Primary CTA text</span><input id="hero-cta1-text" type="text"></label>
+          <label class="field"><span>Primary CTA link</span><input id="hero-cta1-link" type="text" placeholder="https://… or projects.html"></label>
+          <label class="field"><span>Secondary CTA text</span><input id="hero-cta2-text" type="text"></label>
+          <label class="field"><span>Secondary CTA link</span><input id="hero-cta2-link" type="text" placeholder="https://… or contact.html"></label>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <span>Hero image</span>
+            <input id="hero-image-file" type="file" accept="image/*">
+            <img id="hero-image-preview" class="preview hidden" alt="Hero image preview">
+          </div>
+          <div class="field">
+            <span>Hero video (optional)</span>
+            <input id="hero-video-file" type="file" accept="video/*">
+            <video id="hero-video-preview" class="preview hidden" controls></video>
+          </div>
+        </div>
+        <p class="upload-progress hidden" id="hero-progress"></p>
+        <div class="form-actions"><button type="submit" id="hero-save" class="btn btn-primary">Save Hero</button></div>
+      </form>
+    </section>
+
+    <!-- ===== 10. ABOUT ===== -->
+    <section class="tab" id="tab-about">
+      <div class="tab-head"><div><h2 class="tab-title">About Section</h2><p class="tab-sub">Your story and highlights.</p></div></div>
+      <form id="about-form" class="panel-form">
+        <label class="field"><span>Heading</span><input id="about-heading" type="text"></label>
+        <label class="field"><span>Intro</span><textarea id="about-intro" rows="3"></textarea></label>
+        <label class="field"><span>Background</span><textarea id="about-background" rows="4"></textarea></label>
+        <label class="field"><span>Highlights (one per line)</span><textarea id="about-highlights" rows="4"></textarea></label>
+        <div class="field">
+          <span>About image</span>
+          <input id="about-image-file" type="file" accept="image/*">
+          <img id="about-image-preview" class="preview hidden" alt="About image preview">
+        </div>
+        <p class="upload-progress hidden" id="about-progress"></p>
+        <div class="form-actions"><button type="submit" id="about-save" class="btn btn-primary">Save About</button></div>
+      </form>
+    </section>
+
+    <!-- ===== 11. SKILLS ===== -->
+    <section class="tab" id="tab-skills">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Skills</h2><p class="tab-sub">Manage your skill list.</p></div>
+        <div class="tab-actions">
+          <input class="search" id="skills-search" type="search" placeholder="Search skills…">
+          <button class="btn btn-primary" id="skills-add" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add Skill</button>
+        </div>
+      </div>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Name</th><th>Level</th><th>Icon</th><th>Order</th><th class="actions-col">Actions</th></tr></thead>
+        <tbody id="skills-tbody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- ===== 12. PROJECTS ===== -->
+    <section class="tab" id="tab-projects">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Projects</h2><p class="tab-sub">Showcase your work.</p></div>
+        <div class="tab-actions">
+          <input class="search" id="projects-search" type="search" placeholder="Search projects…">
+          <button class="btn btn-primary" id="projects-add" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add Project</button>
+        </div>
+      </div>
+      <div class="cards-grid" id="projects-grid"><p class="empty">Loading…</p></div>
+    </section>
+
+    <!-- ===== 13. SERVICES ===== -->
+    <section class="tab" id="tab-services">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Services</h2><p class="tab-sub">What you offer clients.</p></div>
+        <div class="tab-actions">
+          <input class="search" id="services-search" type="search" placeholder="Search services…">
+          <button class="btn btn-primary" id="services-add" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add Service</button>
+        </div>
+      </div>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Title</th><th>Description</th><th>Icon</th><th>Order</th><th class="actions-col">Actions</th></tr></thead>
+        <tbody id="services-tbody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- ===== 14. PLANS ===== -->
+    <section class="tab" id="tab-plans">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Plans &amp; Pricing</h2><p class="tab-sub">Pricing plans shown on the plans page.</p></div>
+        <div class="tab-actions">
+          <input class="search" id="plans-search" type="search" placeholder="Search plans…">
+          <button class="btn btn-primary" id="plans-add" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add Plan</button>
+        </div>
+      </div>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Name</th><th>Price</th><th>Highlighted</th><th>Order</th><th class="actions-col">Actions</th></tr></thead>
+        <tbody id="plans-tbody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- ===== 15. TESTIMONIALS ===== -->
+    <section class="tab" id="tab-testimonials">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Testimonials</h2><p class="tab-sub">Client reviews and ratings.</p></div>
+        <div class="tab-actions">
+          <input class="search" id="testimonials-search" type="search" placeholder="Search testimonials…">
+          <button class="btn btn-primary" id="testimonials-add" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add Testimonial</button>
+        </div>
+      </div>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Client</th><th>Review</th><th>Rating</th><th>Order</th><th class="actions-col">Actions</th></tr></thead>
+        <tbody id="testimonials-tbody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- ===== 16. BLOG ===== -->
+    <section class="tab" id="tab-blog">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Blog Posts</h2><p class="tab-sub">Articles for the blog section.</p></div>
+        <div class="tab-actions">
+          <input class="search" id="blog-search" type="search" placeholder="Search posts…">
+          <button class="btn btn-primary" id="blog-add" type="button"><svg class="ic"><use href="#i-plus"/></svg>New Post</button>
+        </div>
+      </div>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Title</th><th>Slug</th><th>Status</th><th>Published</th><th class="actions-col">Actions</th></tr></thead>
+        <tbody id="blog-tbody"><tr><td colspan="5" class="empty">Loading…</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- ===== 17. FAQS ===== -->
+    <section class="tab" id="tab-faqs">
+      <div class="tab-head">
+        <div><h2 class="tab-title">FAQs</h2><p class="tab-sub">Frequently asked questions.</p></div>
+        <div class="tab-actions">
+          <input class="search" id="faqs-search" type="search" placeholder="Search FAQs…">
+          <button class="btn btn-primary" id="faqs-add" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add FAQ</button>
+        </div>
+      </div>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Question</th><th>Answer</th><th>Order</th><th class="actions-col">Actions</th></tr></thead>
+        <tbody id="faqs-tbody"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- ===== 18. MEDIA ===== -->
+    <section class="tab" id="tab-media">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Media Library</h2><p class="tab-sub">Files in the <code>media</code> storage bucket.</p></div>
+        <div class="tab-actions">
+          <select class="search" id="media-folder" style="min-width:160px" aria-label="Upload folder">
+            <option value="uploads">uploads/</option>
+            <option value="projects/cover">projects/cover/</option>
+            <option value="projects/gallery">projects/gallery/</option>
+            <option value="projects/video">projects/video/</option>
+            <option value="hero">hero/</option>
+            <option value="about">about/</option>
+            <option value="seo">seo/</option>
+            <option value="testimonials">testimonials/</option>
+            <option value="blog">blog/</option>
+          </select>
+          <label class="btn btn-primary file-btn"><svg class="ic"><use href="#i-plus"/></svg>Upload<input id="media-upload" type="file" accept="image/*,video/*" class="hidden" style="position:absolute;opacity:0;width:0;height:0"></label>
+          <button class="btn btn-ghost btn-sm" id="media-refresh" type="button">Refresh</button>
+        </div>
+      </div>
+      <p class="upload-progress hidden" id="media-progress"></p>
+      <div class="media-grid" id="media-grid"><p class="empty">Loading…</p></div>
+    </section>
+
+    <!-- ===== 19. SOCIAL LINKS ===== -->
+    <section class="tab" id="tab-social">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Social Links</h2><p class="tab-sub">Social profiles shown on the site.</p></div>
+        <div class="tab-actions">
+          <input class="search" id="social-search" type="search" placeholder="Search links…">
+          <button class="btn btn-primary" id="social-add" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add Link</button>
+        </div>
+      </div>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Platform</th><th>URL</th><th>Order</th><th class="actions-col">Actions</th></tr></thead>
+        <tbody id="social-tbody"><tr><td colspan="4" class="empty">Loading…</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- ===== 20. CONTACT SETTINGS ===== -->
+    <section class="tab" id="tab-contact">
+      <div class="tab-head"><div><h2 class="tab-title">Contact Settings</h2><p class="tab-sub">WhatsApp number and contact email used across the site.</p></div></div>
+      <form id="contact-form" class="panel-form">
+        <div class="form-grid">
+          <label class="field"><span>WhatsApp number</span><input id="contact-whatsapp" type="text" placeholder="+92 3XX XXXXXXX"></label>
+          <label class="field"><span>Contact email</span><input id="contact-email" type="email" placeholder="you@example.com"></label>
+        </div>
+        <div class="info-box">The WhatsApp button on the public site only appears after you save a number here.</div>
+        <div class="form-actions"><button type="submit" id="contact-save" class="btn btn-primary">Save Contact Settings</button></div>
+      </form>
+    </section>
+
+    <!-- ===== 21. MESSAGES ===== -->
+    <section class="tab" id="tab-messages">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Messages</h2><p class="tab-sub">Contact form inbox — newest first.</p></div>
+        <div class="tab-actions">
+          <select class="search" id="msg-filter" style="min-width:150px" aria-label="Filter messages">
+            <option value="all">All messages</option>
+            <option value="unread">Unread only</option>
+            <option value="read">Read only</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" id="messages-refresh" type="button">Refresh</button>
+        </div>
+      </div>
+      <div id="messages-list" class="msg-list"><p class="empty">Loading…</p></div>
+    </section>
+
+    <!-- ===== 22. SUBSCRIBERS ===== -->
+    <section class="tab" id="tab-subscribers">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Subscribers</h2><p class="tab-sub">Newsletter signups from the site.</p></div>
+        <div class="tab-actions">
+          <input class="search" id="subs-search" type="search" placeholder="Search emails…">
+          <button class="btn btn-primary btn-sm" id="subs-export" type="button"><svg class="ic"><use href="#i-dl"/></svg>Export CSV</button>
+        </div>
+      </div>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Email</th><th>Subscribed</th><th class="actions-col">Actions</th></tr></thead>
+        <tbody id="subs-tbody"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- ===== 23. SEO SETTINGS ===== -->
+    <section class="tab" id="tab-seo">
+      <div class="tab-head"><div><h2 class="tab-title">SEO Settings</h2><p class="tab-sub">Search-engine meta tags for the public site.</p></div></div>
+      <form id="seo-form" class="panel-form">
+        <label class="field"><span>Meta description</span><textarea id="seo-description" rows="3" placeholder="Short summary shown in Google results"></textarea></label>
+        <label class="field"><span>Meta keywords (comma separated)</span><input id="seo-keywords" type="text"></label>
+        <div class="field">
+          <span>OG image (social share preview)</span>
+          <input id="seo-og-file" type="file" accept="image/*">
+          <img id="seo-og-preview" class="preview hidden" alt="OG image preview">
+        </div>
+        <p class="upload-progress hidden" id="seo-progress"></p>
+        <div class="form-actions"><button type="submit" id="seo-save" class="btn btn-primary">Save SEO Settings</button></div>
+      </form>
+    </section>
+
+    <!-- ===== 24. SITE IDENTITY ===== -->
+    <section class="tab" id="tab-identity">
+      <div class="tab-head"><div><h2 class="tab-title">Site Identity</h2><p class="tab-sub">Site title and footer tagline.</p></div></div>
+      <form id="identity-form" class="panel-form">
+        <label class="field"><span>Site title</span><input id="identity-title" type="text" placeholder="Faizan Jutt 272"></label>
+        <label class="field"><span>Footer tagline</span><input id="identity-tagline" type="text" placeholder="Full Stack Web Developer…"></label>
+        <div class="form-actions"><button type="submit" id="identity-save" class="btn btn-primary">Save Identity</button></div>
+      </form>
+    </section>
+
+    <!-- ===== 25. ADMIN USERS ===== -->
+    <section class="tab" id="tab-admin-users">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Admin Users</h2><p class="tab-sub">Username → email mapping used by the login form.</p></div>
+        <div class="tab-actions"><button class="btn btn-primary" id="adminusers-add" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add User</button></div>
+      </div>
+      <div class="warn-box"><strong>Important:</strong> the email here must match a real user in Supabase <b>Authentication → Users</b>. If you change an email, create/update that auth user too — otherwise login with that username will fail.</div>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Username</th><th>Email</th><th class="actions-col">Actions</th></tr></thead>
+        <tbody id="adminusers-tbody"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+    <!-- ===== 26. ACTIVITY LOG ===== -->
+    <section class="tab" id="tab-activity">
+      <div class="tab-head">
+        <div><h2 class="tab-title">Activity Log</h2><p class="tab-sub">Every save, publish and delete made from this panel.</p></div>
+        <div class="tab-actions"><button class="btn btn-ghost btn-sm" id="activity-refresh" type="button">Refresh</button></div>
+      </div>
+      <div class="table-card"><div class="table-wrap"><table class="data-table">
+        <thead><tr><th>Action</th><th>Detail</th><th>Time</th></tr></thead>
+        <tbody id="activity-tbody"><tr><td colspan="3" class="empty">Loading…</td></tr></tbody>
+      </table></div>
+      <div class="load-more-wrap"><button class="btn btn-ghost" id="activity-more" type="button">Load more</button></div></div>
+    </section>
+
+    <!-- ===== 27. CHANGE PASSWORD ===== -->
+    <section class="tab" id="tab-password">
+      <div class="tab-head"><div><h2 class="tab-title">Change Password</h2><p class="tab-sub">Update the password of the currently signed-in admin.</p></div></div>
+      <form id="password-form" class="panel-form" style="max-width:560px">
+        <label class="field"><span>New password</span><input id="pw-new" type="password" placeholder="Minimum 6 characters" required autocomplete="new-password"></label>
+        <label class="field"><span>Confirm new password</span><input id="pw-confirm" type="password" placeholder="Repeat the new password" required autocomplete="new-password"></label>
+        <p id="pw-error" class="form-error hidden"></p>
+        <div class="form-actions"><button type="submit" id="pw-save" class="btn btn-primary">Update Password</button></div>
+      </form>
+    </section>
+
+    <!-- ===== 28. EXPORT & BACKUP ===== -->
+    <section class="tab" id="tab-backup">
+      <div class="tab-head"><div><h2 class="tab-title">Export &amp; Backup</h2><p class="tab-sub">Download any table as a JSON file — keep regular backups.</p></div></div>
+      <div class="card">
+        <div id="backup-list" class="toolbar" style="margin-bottom:0"><p class="empty">Loading…</p></div>
+      </div>
+      <div class="info-box" style="margin-top:16px">Backups download straight from the database to your device — nothing is uploaded anywhere. For large tables (analytics, activity log) only the most recent 5,000 rows are exported.</div>
+    </section>
+
+    <!-- ===== 29. SYSTEM STATUS ===== -->
+    <section class="tab" id="tab-status">
+      <div class="tab-head">
+        <div><h2 class="tab-title">System Status</h2><p class="tab-sub">Configuration, table health and storage checks.</p></div>
+        <div class="tab-actions"><button class="btn btn-ghost btn-sm" id="status-refresh" type="button">Re-check</button></div>
+      </div>
+      <div class="card"><div id="status-list"><p class="empty">Loading…</p></div></div>
+      <div class="info-box" style="margin-top:16px"><strong>Row Level Security (RLS) note:</strong> content tables allow public <code>SELECT</code> (so the site can read them) and full access for authenticated admins. <code>contact_messages</code>, <code>subscribers</code> and <code>analytics_events</code> allow anonymous <code>INSERT</code> only — visitors can write, but never read. The <code>media</code> bucket is public-read, authenticated-write. All of this is defined in <code>supabase-schema.sql</code>.</div>
+    </section>
+
+    <!-- ===== 30. HELP ===== -->
+    <section class="tab" id="tab-help">
+      <div class="tab-head"><div><h2 class="tab-title">Help</h2><p class="tab-sub">How this admin panel works.</p></div></div>
+      <div class="card help-doc">
+        <h4>Logging in</h4>
+        <p>You can sign in with your <b>username</b> or your full <b>email</b> plus your password. The username is looked up in the <code>admin_users</code> table and mapped to the matching Supabase Auth email behind the scenes. Manage the mapping under <b>Admin Users</b>.</p>
+        <h4>How content is saved</h4>
+        <ul>
+          <li><b>Single-row pages</b> (Hero, About, Contact / SEO / Identity) load one settings row and save it with an upsert — just edit the form and press Save.</li>
+          <li><b>Lists</b> (Skills, Projects, Services, Plans, Testimonials, Blog, FAQs, Social Links, Subscribers) use Add / Edit / Delete. Deleting always asks for confirmation first.</li>
+          <li>Fields marked <i>"one per line"</i> (roles, highlights, plan features, gallery URLs) are stored as lists — put each item on its own line.</li>
+        </ul>
+        <h4>Uploads</h4>
+        <p>Images and videos upload to the public <code>media</code> bucket in Supabase Storage and the public URL is saved automatically. Use <b>Media Library</b> to browse, copy URLs or delete files.</p>
+        <h4>Where the site reads data</h4>
+        <p>The public site reads the same tables through <code>assets/js/db.js</code> (with static fallback content when Supabase is not configured). Whatever you save here appears on the site after a refresh — no rebuild needed.</p>
+        <h4>Analytics</h4>
+        <p>The public site logs <code>pageview</code> and <code>click</code> events into <code>analytics_events</code> via <code>assets/js/analytics.js</code>. The Analytics sections here aggregate the last 30 days of events.</p>
+        <h4>Backups</h4>
+        <p>Use <b>Export &amp; Backup</b> to download each table as JSON before making big changes. Keep a copy somewhere safe (e.g. Google Drive).</p>
+        <h4>Troubleshooting</h4>
+        <ul>
+          <li><b>"Supabase is not configured"</b> — set <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> in <code>assets/js/config.js</code> and reload.</li>
+          <li><b>Save fails with a policy error</b> — you were signed out. Log out and sign in again.</li>
+          <li><b>Login says "Username not found"</b> — check the exact username (lowercase) in <b>Admin Users</b>, or sign in with the full email instead.</li>
+        </ul>
+      </div>
+    </section>
+
+  </div></main>
+</div>
+
+<!-- ============ MODALS ============ -->
+<div id="modal-scrim" class="modal-scrim hidden">
+  <!-- Generic CRUD modal (built by JS) -->
+  <div class="modal hidden" id="modal-generic">
+    <h3 id="generic-title">Edit</h3>
+    <form id="generic-form" autocomplete="off">
+      <div id="generic-fields"></div>
+      <p class="upload-progress hidden" id="generic-progress"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+        <button type="submit" class="btn btn-primary" id="generic-submit">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Confirm dialog -->
+  <div class="modal modal-sm hidden" id="modal-confirm">
+    <h3 id="confirm-title">Are you sure?</h3>
+    <p id="confirm-msg"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="confirm-cancel">Cancel</button>
+      <button type="button" class="btn btn-danger" id="confirm-ok">Delete</button>
+    </div>
+  </div>
+
+  <!-- Projects modal (custom: gallery multi-upload) -->
+  <div class="modal modal-lg hidden" id="modal-project">
+    <h3 id="project-modal-title">Add Project</h3>
+    <form id="project-form" autocomplete="off">
+      <input type="hidden" id="project-id">
+      <div class="form-grid">
+        <label class="field"><span>Name</span><input id="project-name" type="text" required></label>
+        <label class="field"><span>Slug (auto)</span><input id="project-slug" type="text" readonly></label>
+      </div>
+      <label class="field"><span>Description</span><textarea id="project-description" rows="4"></textarea></label>
+      <div class="form-grid">
+        <label class="field"><span>Category</span><input id="project-category" type="text" placeholder="Web App"></label>
+        <label class="field"><span>Display order</span><input id="project-order" type="number" value="0"></label>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <span>Cover image</span>
+          <input id="project-cover-file" type="file" accept="image/*">
+          <img id="project-cover-preview" class="preview hidden" alt="Cover preview">
+        </div>
+        <div class="field">
+          <span>Video (optional)</span>
+          <input id="project-video-file" type="file" accept="video/*">
+          <video id="project-video-preview" class="preview hidden" controls></video>
+        </div>
+      </div>
+      <div class="field">
+        <span>Gallery images (multiple)</span>
+        <input id="project-gallery-files" type="file" accept="image/*" multiple>
+        <div id="project-gallery-previews" class="thumb-row"></div>
+      </div>
+      <div class="form-grid">
+        <label class="field"><span>Live demo URL</span><input id="project-live" type="url" placeholder="https://…"></label>
+        <label class="field"><span>GitHub URL (optional)</span><input id="project-github" type="url" placeholder="https://…"></label>
+      </div>
+      <label class="check-field"><input id="project-featured" type="checkbox"> Featured project</label>
+      <p class="upload-progress hidden" id="project-progress"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+        <button type="submit" id="project-save" class="btn btn-primary">Save Project</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* Admin panel — Faizan Jutt 272 · Supabase-backed, single-file app */
+(function(){
+'use strict';
+
+/* ================= helpers ================= */
+const $  = (s, r) => (r||document).querySelector(s);
+const $$ = (s, r) => Array.from((r||document).querySelectorAll(s));
+const icon = (name) => '<svg class="ic"><use href="#' + name + '"/></svg>';
+const escapeHtml = (v) => String(v == null ? '' : v)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const slugify = (s) => String(s||'').toLowerCase().trim()
+  .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+const fmtDate = (iso) => { try { const d = new Date(iso); return isNaN(d) ? (iso||'') : d.toLocaleString(); } catch(e){ return iso||''; } };
+const fmtDay = (iso) => { try { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}); } catch(e){ return ''; } };
+const dayKey = (iso) => { const d = new Date(iso); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+const shortDay = (key) => { const p = key.split('-'); return p[2] + '/' + p[1]; };
+function toLocalInput(iso){
+  if (!iso) return '';
+  const d = new Date(iso); if (isNaN(d)) return '';
+  const p = (n) => String(n).padStart(2,'0');
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+function downloadFile(name, content, mime){
+  const blob = new Blob([content], { type: mime || 'application/octet-stream' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 800);
+}
+
+function toast(msg, type){
+  const wrap = $('#toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type || 'info');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .4s'; }, 3400);
+  setTimeout(() => el.remove(), 4000);
+}
+function errToast(e, fallback){
+  let m = (e && e.message) ? e.message : (fallback || 'Something went wrong');
+  toast(m, 'error');
+}
+function setBusy(btn, busy, label){
+  if (!btn) return;
+  if (busy){ btn.dataset.orig = btn.textContent; btn.disabled = true; if (label) btn.textContent = label; }
+  else { btn.disabled = false; if (btn.dataset.orig) btn.textContent = btn.dataset.orig; }
+}
+
+/* ================= config / client ================= */
+function getConfig(){
+  const c = (window.SUPABASE_CONFIG && typeof window.SUPABASE_CONFIG === 'object') ? window.SUPABASE_CONFIG : null;
+  if (!c) return null;
+  const url = String(c.SUPABASE_URL || '').trim();
+  const key = String(c.SUPABASE_ANON_KEY || '').trim();
+  if (!url || !key || url.indexOf('PASTE_') !== -1 || key.indexOf('PASTE_') !== -1) return null;
+  return { url, key };
+}
+const CFG = getConfig();
+let sb = null;
+if (CFG && window.supabase && window.supabase.createClient){
+  try { sb = window.supabase.createClient(CFG.url, CFG.key); }
+  catch(e){ sb = null; console.error(e); }
+}
+function requireClient(){
+  if (!sb){ toast('Supabase is not configured — set assets/js/config.js first.', 'error'); return null; }
+  return sb;
+}
+function initSetupBanner(){
+  if (CFG) return;
+  $('#setup-banner').classList.remove('hidden');
+  $('#sb-hide').addEventListener('click', () => $('#setup-banner').classList.add('hidden'));
+}
+
+/* ================= activity log (fire-and-forget) ================= */
+function logActivity(action, detail){
+  try {
+    if (!sb) return;
+    sb.from('activity_log').insert({ action: String(action), detail: detail ? String(detail).slice(0, 500) : null })
+      .then(() => {}, () => {});
+  } catch(e){}
+}
+
+/* ================= file upload ================= */
+async function uploadFile(file, folder, progressEl){
+  const client = requireClient(); if (!client) return null;
+  const safe = String(file.name || 'file').replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = (folder || 'uploads') + '/' + Date.now() + '-' + safe;
+  if (progressEl){ progressEl.classList.remove('hidden'); progressEl.textContent = 'Uploading ' + safe + '…'; }
+  try {
+    const { error } = await client.storage.from('media').upload(path, file);
+    if (error) throw error;
+    const { data } = client.storage.from('media').getPublicUrl(path);
+    if (progressEl){ progressEl.textContent = 'Uploaded'; setTimeout(() => progressEl.classList.add('hidden'), 1500); }
+    return data && data.publicUrl ? data.publicUrl : null;
+  } catch(e){
+    if (progressEl) progressEl.classList.add('hidden');
+    errToast(e, 'Upload failed');
+    return null;
+  }
+}
+
+/* file input → preview + pending file plumbing (used by single-row forms) */
+function wireUpload(inputId, previewId){
+  const input = $('#' + inputId), preview = $('#' + previewId);
+  const state = { file: null };
+  input.addEventListener('change', () => {
+    state.file = input.files && input.files[0] ? input.files[0] : null;
+    if (state.file){
+      preview.src = URL.createObjectURL(state.file);
+      preview.classList.remove('hidden');
+    } else { preview.classList.add('hidden'); }
+  });
+  return {
+    get file(){ return state.file; },
+    reset(){ state.file = null; input.value = ''; preview.classList.add('hidden'); },
+    show(url){ if (url){ preview.src = url; preview.classList.remove('hidden'); } }
+  };
+}
+
+/* ================= auth ================= */
+async function checkSession(){
+  if (!sb) return null;
+  try {
+    const { data, error } = await sb.auth.getSession();
+    if (error){ console.warn(error); return null; }
+    return data && data.session ? data.session : null;
+  } catch(e){ console.warn(e); return null; }
+}
+function showView(loggedIn){
+  $('#login-view').classList.toggle('hidden', loggedIn);
+  $('#app-view').classList.toggle('hidden', !loggedIn);
+}
+async function refreshAll(){
+  await ensureAnalytics();
+  await Promise.allSettled([loadDashboard(), updateMsgBadge(), checkDbHealth()]);
+}
+
+/* ================= database health check =================
+   Verifies every table the admin + website need. If any are
+   missing (schema SQL not run), shows a clear warning banner
+   so saves don't fail silently. */
+const REQUIRED_TABLES = ['site_settings','hero','about','skills','projects','services',
+  'social_links','contact_messages','admin_users','testimonials','blog_posts','faqs',
+  'plans','subscribers','analytics_events','activity_log'];
+async function checkDbHealth(){
+  const bar = $('#dbwarn');
+  if (!bar) return;
+  try {
+    const client = requireClient(); if (!client){ bar.classList.add('hidden'); return; }
+    const results = await Promise.all(REQUIRED_TABLES.map(async (t) => {
+      try {
+        const { error } = await client.from(t).select('*').limit(1);
+        return error ? t : null;
+      } catch(e){ return t; }
+    }));
+    const missing = results.filter(Boolean);
+    if (!missing.length){ bar.classList.add('hidden'); bar.innerHTML = ''; return; }
+    bar.innerHTML =
+      '<div><b>⚠️ Database incomplete</b> — ' + missing.length + ' of ' + REQUIRED_TABLES.length +
+      ' tables are missing: <b>' + missing.map(escapeHtml).join(', ') + '</b>.<br>' +
+      'Changes in these admin sections will <b>not save</b> and will <b>not appear</b> on the website.<br>' +
+      'Fix: Supabase Dashboard → <b>SQL Editor</b> → run the full <code>supabase-schema.sql</code> → then refresh this page.</div>' +
+      '<button class="dbwarn-x" type="button" id="dbwarn-x">Dismiss</button>';
+    bar.classList.remove('hidden');
+    const x = $('#dbwarn-x');
+    if (x) x.addEventListener('click', () => bar.classList.add('hidden'));
+  } catch(e){ /* never block the admin on a health check */ }
+}
+
+function initAuth(){
+  const form = $('#login-form');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const client = requireClient(); if (!client) return;
+    const btn = $('#login-btn'), errEl = $('#login-error');
+    errEl.classList.add('hidden'); errEl.textContent = '';
+    setBusy(btn, true, 'Signing in…');
+    const ident = $('#login-ident').value.trim();
+    const password = $('#login-password').value;
+    let email = null;
+    const { data } = await client.from('admin_users').select('email').eq('username', ident.toLowerCase()).maybeSingle();
+    if (data) { email = data.email; }
+    else if (ident.includes('@')) { email = ident; }
+    else { errEl.textContent = 'Username not found.'; errEl.classList.remove('hidden'); setBusy(btn, false); return; }
+    const { error } = await client.auth.signInWithPassword({ email, password });
+    setBusy(btn, false);
+    if (error){ errEl.textContent = error.message; errEl.classList.remove('hidden'); return; }
+    toast('Welcome back', 'success');
+    showView(true);
+    await refreshAll();
+  });
+  $('#logout-btn').addEventListener('click', async () => {
+    const client = requireClient(); if (!client) return;
+    const { error } = await client.auth.signOut();
+    if (error){ errToast(error, 'Logout failed'); return; }
+    $('#login-password').value = '';
+    showView(false);
+    toast('Signed out.', 'success');
+  });
+  $('#view-site').addEventListener('click', () => { window.location.href = '../index.html'; });
+  if (sb && sb.auth && sb.auth.onAuthStateChange){
+    sb.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') showView(false);
+    });
+  }
+}
+
+/* ================= navigation ================= */
+const SECTIONS = [
+  { group: 'Overview', items: [
+    ['dashboard', 'Dashboard', 'i-dash']
+  ]},
+  { group: 'Analytics', items: [
+    ['analytics', 'Analytics', 'i-chart'],
+    ['pageviews', 'Page Views', 'i-eye'],
+    ['clicks', 'Click Events', 'i-click'],
+    ['referrers', 'Referrers', 'i-link'],
+    ['daily', 'Daily Traffic', 'i-cal'],
+    ['toppages', 'Top Pages', 'i-trend'],
+    ['devices', 'Devices', 'i-dev']
+  ]},
+  { group: 'Content', items: [
+    ['hero', 'Hero', 'i-img'],
+    ['about', 'About', 'i-user'],
+    ['skills', 'Skills', 'i-zap'],
+    ['projects', 'Projects', 'i-folder'],
+    ['services', 'Services', 'i-brief'],
+    ['plans', 'Plans & Pricing', 'i-tag'],
+    ['testimonials', 'Testimonials', 'i-quote'],
+    ['blog', 'Blog Posts', 'i-pen'],
+    ['faqs', 'FAQs', 'i-help'],
+    ['media', 'Media Library', 'i-imgs']
+  ]},
+  { group: 'Site', items: [
+    ['social', 'Social Links', 'i-share'],
+    ['contact', 'Contact Settings', 'i-phone'],
+    ['messages', 'Messages', 'i-mail', 'msgBadge'],
+    ['subscribers', 'Subscribers', 'i-users'],
+    ['seo', 'SEO Settings', 'i-search'],
+    ['identity', 'Site Identity', 'i-globe']
+  ]},
+  { group: 'Admin', items: [
+    ['admin-users', 'Admin Users', 'i-key'],
+    ['activity', 'Activity Log', 'i-clock'],
+    ['password', 'Change Password', 'i-lock'],
+    ['backup', 'Export & Backup', 'i-dl'],
+    ['status', 'System Status', 'i-pulse'],
+    ['help', 'Help', 'i-book']
+  ]}
+];
+const SECTION_TITLES = {};
+function renderNav(){
+  const nav = $('#nav');
+  let html = '';
+  SECTIONS.forEach((g) => {
+    html += '<div class="nav-group-label">' + escapeHtml(g.group) + '</div>';
+    g.items.forEach(([id, label, ic, badge]) => {
+      SECTION_TITLES[id] = label;
+      html += '<button class="nav-item' + (id === 'dashboard' ? ' active' : '') + '" data-tab="' + id + '" type="button">' +
+        icon(ic) + '<span>' + escapeHtml(label) + '</span>' +
+        (badge ? '<span class="nbadge hidden" id="nav-' + badge + '">0</span>' : '') +
+        '</button>';
+    });
+  });
+  nav.innerHTML = html;
+}
+function switchTab(id){
+  $$('.nav-item').forEach((b) => b.classList.toggle('active', b.dataset.tab === id));
+  $$('.tab').forEach((t) => t.classList.toggle('active', t.id === 'tab-' + id));
+  $('#topbar-title').textContent = SECTION_TITLES[id] || 'Admin';
+  const sidebar = $('#sidebar');
+  if (sidebar.classList.contains('open')){ sidebar.classList.remove('open'); $('#sidebar-scrim').classList.add('hidden'); }
+  const loader = LOADERS[id];
+  if (loader){ Promise.resolve().then(loader).catch((e) => console.warn('loader', id, e)); }
+  window.scrollTo(0, 0);
+}
+function initNav(){
+  const sidebar = $('#sidebar'), scrim = $('#sidebar-scrim');
+  $('#hamburger').addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    scrim.classList.toggle('hidden', !sidebar.classList.contains('open'));
+  });
+  scrim.addEventListener('click', () => { sidebar.classList.remove('open'); scrim.classList.add('hidden'); });
+  $$('.nav-item').forEach((btn) => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+  $$('[data-goto]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      switchTab(btn.dataset.goto);
+      if (btn.dataset.goto === 'projects') setTimeout(() => openProjectModal(null), 150);
+    });
+  });
+}
+
+/* ================= modals ================= */
+function openModal(id){
+  $('#modal-scrim').classList.remove('hidden');
+  $$('#modal-scrim > .modal').forEach((m) => m.classList.add('hidden'));
+  $('#' + id).classList.remove('hidden');
+}
+function closeModals(){
+  $('#modal-scrim').classList.add('hidden');
+  $$('#modal-scrim > .modal').forEach((m) => m.classList.add('hidden'));
+  if (_confirmResolve){ const r = _confirmResolve; _confirmResolve = null; r(false); }
+}
+function initModals(){
+  $('#modal-scrim').addEventListener('click', (e) => { if (e.target.id === 'modal-scrim') closeModals(); });
+  $$('[data-close]').forEach((b) => b.addEventListener('click', closeModals));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModals(); });
+}
+
+/* ---------- confirm dialog (Promise<boolean>) ---------- */
+let _confirmResolve = null;
+function confirmDialog(title, message, okLabel){
+  return new Promise((resolve) => {
+    _confirmResolve = resolve;
+    $('#confirm-title').textContent = title || 'Are you sure?';
+    $('#confirm-msg').textContent = message || 'This action cannot be undone.';
+    $('#confirm-ok').textContent = okLabel || 'Delete';
+    openModal('modal-confirm');
+  });
+}
+function initConfirm(){
+  $('#confirm-ok').addEventListener('click', () => {
+    closeModals();
+    if (_confirmResolve){ const r = _confirmResolve; _confirmResolve = null; r(true); }
+  });
+  $('#confirm-cancel').addEventListener('click', () => {
+    closeModals();
+    if (_confirmResolve){ const r = _confirmResolve; _confirmResolve = null; r(false); }
+  });
+}
+
+/* ---------- generic form modal ----------
+   fields: [{key,label,type,placeholder,required,rows,options,accept,full,hint,readonly,readonlyOnEdit,suggestFrom,step,min,max}]
+   types: text,number,url,email,datetime,textarea,checkbox,select,file                */
+const _gm = { fields: [], files: {}, current: {}, row: null, onSubmit: null, suggest: {} };
+function openFormModal(cfg){
+  _gm.fields = cfg.fields || [];
+  _gm.files = {}; _gm.current = {}; _gm.row = cfg.values && cfg.values._row ? cfg.values._row : (cfg.row || null);
+  _gm.onSubmit = cfg.onSubmit || null;
+  _gm.suggest = {};
+  $('#generic-title').textContent = cfg.title || 'Edit';
+  $('#generic-submit').textContent = cfg.submitLabel || 'Save';
+  $('#modal-generic').classList.toggle('modal-lg', !!cfg.wide);
+  const wrap = $('#generic-fields');
+  wrap.innerHTML = '';
+  const isEdit = !!_gm.row;
+  _gm.fields.forEach((f) => {
+    const raw = _gm.row ? _gm.row[f.key] : null;
+    const ro = f.readonly || (f.readonlyOnEdit && isEdit);
+    const holder = document.createElement('div');
+    if (f.type === 'checkbox'){
+      holder.innerHTML = '<label class="check-field"><input type="checkbox" id="gf-' + f.key + '"' +
+        ((raw ? ' checked' : '') + (ro ? ' disabled' : '')) + '> ' + escapeHtml(f.label) + '</label>';
+      wrap.appendChild(holder);
+      return;
+    }
+    if (f.type === 'file'){
+      _gm.current[f.key] = raw || '';
+      _gm.files[f.key] = null;
+      const kind = f.preview === 'video' ? 'video' : 'image';
+      holder.className = 'field' + (f.full ? ' full' : '');
+      holder.innerHTML = '<span>' + escapeHtml(f.label) + '</span>' +
+        '<input type="file" id="gf-' + f.key + '" accept="' + escapeHtml(f.accept || 'image/*') + '"' + (ro ? ' disabled' : '') + '>' +
+        (kind === 'video'
+          ? '<video class="preview' + (raw ? '' : ' hidden') + '" id="gfp-' + f.key + '" controls' + (raw ? ' src="' + escapeHtml(raw) + '"' : '') + '></video>'
+          : '<img class="preview' + (raw ? '' : ' hidden') + '" id="gfp-' + f.key + '" alt="preview"' + (raw ? ' src="' + escapeHtml(raw) + '"' : '') + '>');
+      wrap.appendChild(holder);
+      if (!ro){
+        holder.querySelector('input').addEventListener('change', (e) => {
+          const file = e.target.files && e.target.files[0];
+          _gm.files[f.key] = file || null;
+          const pv = $('#gfp-' + f.key);
+          if (file){ pv.src = URL.createObjectURL(file); pv.classList.remove('hidden'); }
+          else if (_gm.current[f.key]){ pv.src = _gm.current[f.key]; pv.classList.remove('hidden'); }
+          else pv.classList.add('hidden');
+        });
+      }
+      return;
+    }
+    const grid = document.createElement('div');
+    grid.className = 'field' + (f.full ? ' full' : '');
+    let input = '';
+    const dis = ro ? ' disabled' : '';
+    const req = f.required ? ' required' : '';
+    const ph = f.placeholder ? ' placeholder="' + escapeHtml(f.placeholder) + '"' : '';
+    if (f.type === 'textarea'){
+      let v = raw == null ? '' : (Array.isArray(raw) ? raw.join('\n') : String(raw));
+      input = '<textarea id="gf-' + f.key + '" rows="' + (f.rows || 4) + '"' + ph + dis + '>' + escapeHtml(v) + '</textarea>';
+    } else if (f.type === 'select'){
+      input = '<select id="gf-' + f.key + '"' + dis + '>' + (f.options || []).map((o) =>
+        '<option value="' + escapeHtml(o.value) + '"' + (String(raw) === String(o.value) ? ' selected' : '') + '>' + escapeHtml(o.label) + '</option>'
+      ).join('') + '</select>';
+    } else {
+      let v = '';
+      if (f.type === 'datetime'){ v = toLocalInput(raw); }
+      else if (f.type === 'number'){ v = raw == null ? (f.default != null ? f.default : '') : raw; }
+      else { v = raw == null ? '' : String(raw); }
+      input = '<input id="gf-' + f.key + '" type="' + (f.type === 'datetime' ? 'datetime-local' : (f.type || 'text')) + '" value="' + escapeHtml(v) + '"' + ph + req + dis +
+        (f.step ? ' step="' + f.step + '"' : '') + (f.min != null ? ' min="' + f.min + '"' : '') + (f.max != null ? ' max="' + f.max + '"' : '') + '>';
+    }
+    grid.innerHTML = '<span>' + escapeHtml(f.label) + '</span>' + input +
+      (f.hint ? '<span class="hint" style="text-transform:none;letter-spacing:0">' + escapeHtml(f.hint) + '</span>' : '');
+    wrap.appendChild(grid);
+    if (f.suggestFrom) _gm.suggest[f.key] = f.suggestFrom;
+  });
+  /* slug auto-suggest */
+  Object.keys(_gm.suggest).forEach((target) => {
+    const src = _gm.suggest[target];
+    const srcEl = $('#gf-' + src), tgtEl = $('#gf-' + target);
+    if (!srcEl || !tgtEl || isEdit) return;
+    let touched = false;
+    tgtEl.addEventListener('input', () => { touched = true; });
+    srcEl.addEventListener('input', () => { if (!touched) tgtEl.value = slugify(srcEl.value); });
+  });
+  openModal('modal-generic');
+}
+function initGenericForm(){
+  $('#generic-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = $('#generic-submit'), prog = $('#generic-progress');
+    const values = { _row: _gm.row };
+    _gm.fields.forEach((f) => {
+      if (f.type === 'file') return;
+      const el = $('#gf-' + f.key);
+      if (!el) return;
+      if (f.type === 'checkbox'){ values[f.key] = el.checked; return; }
+      if (f.type === 'number'){ values[f.key] = el.value === '' ? null : (f.int === false ? parseFloat(el.value) : parseInt(el.value, 10)); return; }
+      if (f.type === 'datetime'){ values[f.key] = el.value ? new Date(el.value).toISOString() : null; return; }
+      if (f.list){ values[f.key] = String(el.value || '').split('\n').map((s) => s.trim()).filter(Boolean); return; }
+      values[f.key] = el.value;
+    });
+    setBusy(btn, true, 'Saving…');
+    try {
+      const ok = _gm.onSubmit ? await _gm.onSubmit(values, _gm.files, _gm.current) : true;
+      if (ok !== false) closeModals();
+    } catch(err){ errToast(err, 'Save failed'); }
+    setBusy(btn, false);
+  });
+}
+
+/* ---------- generic CRUD section ----------
+   o = { table, tbodyId, addBtnId, searchId, modalTitle, wide, fields, cols,
+         order, describe(row)->str, prepare(payload,files,current,row)->payload|null,
+         afterChange(), emptyText }                                        */
+function defineCrud(o){
+  const S = { rows: [], filter: '' };
+  const KC = o.keyCol || 'id'; /* primary-key column (admin_users uses username) */
+  const colCount = (o.cols ? o.cols.length : 0) + 1;
+  async function load(){
+    const client = requireClient(); if (!client) return;
+    const tb = $('#' + o.tbodyId);
+    try {
+      let q = client.from(o.table).select('*');
+      (o.order || [['created_at', 'desc']]).forEach(([c, dir]) => { q = q.order(c, { ascending: dir !== 'desc' }); });
+      const { data, error } = await q;
+      if (error) throw error;
+      S.rows = data || [];
+      paint();
+    } catch(e){
+      tb.innerHTML = '<tr><td colspan="' + colCount + '" class="empty">' + escapeHtml(e.message) + '</td></tr>';
+    }
+  }
+  function paint(){
+    const tb = $('#' + o.tbodyId);
+    const f = (S.filter || '').toLowerCase();
+    const list = S.rows.filter((r) => !f || JSON.stringify(r).toLowerCase().indexOf(f) !== -1);
+    if (!list.length){
+      tb.innerHTML = '<tr><td colspan="' + colCount + '" class="empty">' + escapeHtml(o.emptyText || 'No records yet.') + '</td></tr>';
+      return;
+    }
+    tb.innerHTML = list.map((r) => {
+      const tds = o.cols.map((c) => {
+        let html = c.render ? c.render(r[c.key], r) : escapeHtml(r[c.key] == null || r[c.key] === '' ? '–' : r[c.key]);
+        return '<td' + (c.clip ? ' class="clip"' : '') + '>' + html + '</td>';
+      }).join('');
+      return '<tr>' + tds + '<td class="actions-col"><div class="row-btns">' +
+        '<button class="btn btn-ghost btn-sm" data-crud-edit="' + escapeHtml(r[KC]) + '" type="button">Edit</button>' +
+        '<button class="btn btn-danger-outline btn-sm" data-crud-del="' + escapeHtml(r[KC]) + '" type="button">Delete</button>' +
+        '</div></td></tr>';
+    }).join('');
+    $$('[data-crud-edit]', tb).forEach((b) => b.addEventListener('click', () => {
+      const row = S.rows.find((x) => String(x[KC]) === b.dataset.crudEdit);
+      if (row) open(row);
+    }));
+    $$('[data-crud-del]', tb).forEach((b) => b.addEventListener('click', () => del(b.dataset.crudDel)));
+  }
+  function open(row){
+    openFormModal({
+      title: (row ? 'Edit ' : 'Add ') + o.modalTitle,
+      wide: o.wide,
+      fields: o.fields,
+      row: row || null,
+      submitLabel: row ? 'Save Changes' : 'Create',
+      onSubmit: (values, files, current) => submit(values, files, current, row || null)
+    });
+  }
+  async function submit(values, files, current, row){
+    const client = requireClient(); if (!client) return false;
+    const btn = $('#generic-submit'), prog = $('#generic-progress');
+    try {
+      const payload = {};
+      for (const fld of o.fields){
+        if (fld.type === 'file') continue;
+        let v = values[fld.key];
+        if (fld.type === 'number' && (v == null || isNaN(v))) v = 0;
+        if (typeof v === 'string'){
+          v = v.trim();
+          if (v === '' && !fld.keepEmpty) v = null;
+        }
+        payload[fld.key] = v;
+      }
+      let finalPayload = payload;
+      if (o.prepare){
+        finalPayload = await o.prepare(payload, files, current, row, prog);
+        if (!finalPayload) return false;
+      }
+      let error = null;
+      if (row && row[KC] != null) ({ error } = await client.from(o.table).update(finalPayload).eq(KC, row[KC]));
+      else ({ error } = await client.from(o.table).insert(finalPayload));
+      if (error) throw error;
+      toast((row ? 'Updated' : 'Created') + ' ✓', 'success');
+      logActivity((row ? 'update:' : 'create:') + o.table, o.describe ? o.describe(values, row) : '');
+      await load();
+      if (o.afterChange) await o.afterChange();
+      return true;
+    } catch(e){ errToast(e, 'Save failed'); return false; }
+  }
+  async function del(id){
+    const client = requireClient(); if (!client) return;
+    const row = S.rows.find((x) => String(x[KC]) === String(id));
+    const label = o.describe && row ? o.describe(row, null) : 'this record';
+    const ok = await confirmDialog('Delete ' + o.modalTitle + '?', '"' + label + '" will be permanently deleted.', 'Delete');
+    if (!ok) return;
+    try {
+      const { error } = await client.from(o.table).delete().eq(KC, id);
+      if (error) throw error;
+      toast('Deleted', 'success');
+      logActivity('delete:' + o.table, label);
+      await load();
+      if (o.afterChange) await o.afterChange();
+    } catch(e){ errToast(e, 'Delete failed'); }
+  }
+  function init(){
+    const add = $('#' + o.addBtnId);
+    if (add) add.addEventListener('click', () => open(null));
+    if (o.searchId){
+      const s = $('#' + o.searchId);
+      if (s) s.addEventListener('input', (e) => { S.filter = e.target.value; paint(); });
+    }
+  }
+  return { load, init, open, get rows(){ return S.rows; } };
+}
+
+/* upload helper for file fields inside prepare(): uploads pending files into `folder`,
+   keeps existing URLs when untouched. Returns the prepare(payload,files,current,row,prog) handler. */
+function prepareUploads(folder, fileKeys){
+  return async (payload, files, current, row, prog) => {
+    for (const key of fileKeys){
+      if (files[key]){
+        const url = await uploadFile(files[key], folder, prog);
+        if (!url) return null;
+        payload[key] = url;
+      } else {
+        payload[key] = (current && current[key]) || (row ? row[key] : null) || null;
+      }
+    }
+    return payload;
+  };
+}
+
+/* ================= analytics core ================= */
+const Analytics = { ready: false, loading: false, events: [], err: null };
+function thirtyDaysAgoISO(){ const d = new Date(); d.setDate(d.getDate() - 30); return d.toISOString(); }
+function sevenDaysAgoISO(){ const d = new Date(); d.setDate(d.getDate() - 7); return d.toISOString(); }
+async function ensureAnalytics(){
+  if (Analytics.ready || Analytics.loading || !sb) return;
+  Analytics.loading = true;
+  try {
+    const { data, error } = await sb.from('analytics_events')
+      .select('id,event_type,page,label,referrer,user_agent,created_at')
+      .gte('created_at', thirtyDaysAgoISO())
+      .order('created_at', { ascending: false })
+      .limit(5000);
+    if (error) throw error;
+    Analytics.events = data || [];
+  } catch(e){ Analytics.err = e; Analytics.events = []; }
+  Analytics.ready = true;
+  Analytics.loading = false;
+}
+function anPageviews(){ return Analytics.events.filter((e) => e.event_type === 'pageview'); }
+function anClicks(){ return Analytics.events.filter((e) => e.event_type === 'click'); }
+function anSince(list, iso){ const t = new Date(iso).getTime(); return list.filter((e) => new Date(e.created_at).getTime() >= t); }
+function last30DayKeys(){
+  const out = [];
+  for (let i = 29; i >= 0; i--){ const d = new Date(); d.setDate(d.getDate() - i); out.push(dayKey(d.toISOString())); }
+  return out;
+}
+function anDaily(){
+  const keys = last30DayKeys();
+  const map = {};
+  keys.forEach((k) => { map[k] = { date: k, pv: 0, clicks: 0 }; });
+  Analytics.events.forEach((e) => {
+    const k = dayKey(e.created_at);
+    if (!map[k]) return;
+    if (e.event_type === 'pageview') map[k].pv++;
+    else if (e.event_type === 'click') map[k].clicks++;
+  });
+  return keys.map((k) => map[k]);
+}
+function cleanPage(p){ p = String(p || '').trim(); return p || '(unknown)'; }
+function cleanRef(r){
+  r = String(r || '').trim();
+  if (!r) return '';
+  try { const u = new URL(r); return u.hostname.replace(/^www\./, ''); }
+  catch(e){ return r.length > 48 ? r.slice(0, 48) + '…' : r; }
+}
+function groupCount(list, keyFn){
+  const m = {};
+  list.forEach((e) => { const k = keyFn(e); if (!k) return; m[k] = (m[k] || 0) + 1; });
+  return Object.keys(m).map((k) => ({ name: k, count: m[k] })).sort((a, b) => b.count - a.count);
+}
+function detectBrowser(ua){
+  ua = String(ua || '');
+  if (/Edg\//i.test(ua)) return 'Edge';
+  if (/Firefox\//i.test(ua)) return 'Firefox';
+  if (/Chrome\//i.test(ua)) return 'Chrome';
+  if (/Safari\//i.test(ua)) return 'Safari';
+  if (/OPR\//i.test(ua) || /Opera/i.test(ua)) return 'Opera';
+  return 'Other';
+}
+function detectOS(ua){
+  ua = String(ua || '');
+  if (/Android/i.test(ua)) return 'Android';
+  if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS';
+  if (/Windows/i.test(ua)) return 'Windows';
+  if (/Mac OS X/i.test(ua)) return 'macOS';
+  if (/Linux/i.test(ua)) return 'Linux';
+  return 'Other';
+}
+function barRowsHTML(groups, total, colorClass){
+  if (!groups.length) return '<p class="empty">No data yet.</p>';
+  const max = groups[0].count || 1;
+  return groups.map((g) => {
+    const pct = Math.round((g.count / max) * 100);
+    const share = total ? Math.round((g.count / total) * 100) : 0;
+    return '<div class="bar-row"><span class="bl" title="' + escapeHtml(g.name) + '">' + escapeHtml(g.name) + '</span>' +
+      '<div class="bar-track"><div class="bar-fill ' + (colorClass || '') + '" style="width:' + pct + '%"></div></div>' +
+      '<span class="bv">' + g.count + (total ? ' · ' + share + '%' : '') + '</span></div>';
+  }).join('');
+}
+
+/* ================= 1. DASHBOARD ================= */
+async function loadDashboard(){
+  const client = requireClient(); if (!client) return;
+  try {
+    const [proj, feat, msgs, msgsT, subs] = await Promise.all([
+      client.from('projects').select('id', { count: 'exact', head: true }),
+      client.from('projects').select('id', { count: 'exact', head: true }).eq('featured', true),
+      client.from('contact_messages').select('id', { count: 'exact', head: true }).eq('is_read', false),
+      client.from('contact_messages').select('id', { count: 'exact', head: true }),
+      client.from('subscribers').select('id', { count: 'exact', head: true })
+    ]);
+    const pv = anPageviews(), cl = anClicks();
+    const pv7 = anSince(pv, sevenDaysAgoISO()).length;
+    const cl7 = anSince(cl, sevenDaysAgoISO()).length;
+    $('#d-pv30').textContent = pv.length;
+    $('#d-cl30').textContent = cl.length;
+    $('#d-projects').textContent = proj.count || 0;
+    $('#d-msgs').textContent = msgs.count || 0;
+    $('#d-subs').textContent = subs.count || 0;
+    $('#d-pv7').innerHTML = '<b>+' + pv7 + '</b> in last 7 days';
+    $('#d-cl7').innerHTML = '<b>+' + cl7 + '</b> in last 7 days';
+    $('#d-featured').textContent = (feat.count || 0) + ' featured';
+    $('#d-msgs-t').textContent = (msgsT.count || 0) + ' total messages';
+    $('#d-subs-t').textContent = 'newsletter list';
+    if (Analytics.err && !Analytics.events.length){
+      $('#d-pv7').textContent = 'analytics unavailable';
+      $('#d-cl7').textContent = 'analytics unavailable';
+    }
+  } catch(e){ errToast(e, 'Failed to load dashboard'); }
+  /* recent activity */
+  try {
+    const { data, error } = await client.from('activity_log').select('*').order('created_at', { ascending: false }).limit(10);
+    if (error) throw error;
+    const tb = $('#dash-activity');
+    if (!data || !data.length){ tb.innerHTML = '<tr><td colspan="3" class="empty">No activity yet — saves and deletes will appear here.</td></tr>'; return; }
+    tb.innerHTML = data.map((a) =>
+      '<tr><td><span class="pill pill-orange mono">' + escapeHtml(a.action) + '</span></td>' +
+      '<td class="clip">' + escapeHtml(a.detail || '–') + '</td>' +
+      '<td class="mono">' + escapeHtml(fmtDate(a.created_at)) + '</td></tr>'
+    ).join('');
+  } catch(e){ $('#dash-activity').innerHTML = '<tr><td colspan="3" class="empty">' + escapeHtml(e.message) + '</td></tr>'; }
+}
+async function updateMsgBadge(){
+  const client = requireClient(); if (!client) return;
+  try {
+    const { count } = await client.from('contact_messages').select('id', { count: 'exact', head: true }).eq('is_read', false);
+    const badge = $('#nav-msgBadge');
+    if (badge){ badge.textContent = count || 0; badge.classList.toggle('hidden', !(count > 0)); }
+  } catch(e){}
+}
+
+/* ================= 2. ANALYTICS OVERVIEW ================= */
+function groupedBarChartSVG(days){
+  const W = 980, H = 300, padL = 44, padB = 34, padT = 16;
+  const cw = W - padL - 12, ch = H - padT - padB;
+  const max = Math.max(1, ...days.map((d) => Math.max(d.pv, d.clicks)));
+  const gw = cw / days.length;
+  const bw = Math.max(2, Math.min(14, gw * 0.32));
+  let bars = '';
+  days.forEach((d, i) => {
+    const x = padL + i * gw + gw / 2;
+    const h1 = Math.round((d.pv / max) * ch), h2 = Math.round((d.clicks / max) * ch);
+    bars += '<rect x="' + (x - bw - 1.5).toFixed(1) + '" y="' + (padT + ch - h1) + '" width="' + bw.toFixed(1) + '" height="' + h1 + '" rx="2" fill="#f27d26">' +
+      '<title>' + d.date + ' — ' + d.pv + ' pageviews</title></rect>';
+    bars += '<rect x="' + (x + 1.5).toFixed(1) + '" y="' + (padT + ch - h2) + '" width="' + bw.toFixed(1) + '" height="' + h2 + '" rx="2" fill="#60a5fa">' +
+      '<title>' + d.date + ' — ' + d.clicks + ' clicks</title></rect>';
+    if (i % 5 === 0 || i === days.length - 1){
+      bars += '<text x="' + x.toFixed(1) + '" y="' + (H - 10) + '" text-anchor="middle" font-size="10" fill="#6d6d76">' + shortDay(d.date) + '</text>';
+    }
+  });
+  let grid = '';
+  [0, 0.5, 1].forEach((f) => {
+    const y = padT + ch * (1 - f);
+    grid += '<line x1="' + padL + '" y1="' + y + '" x2="' + (W - 12) + '" y2="' + y + '" stroke="#262626" stroke-width="1"/>' +
+      '<text x="' + (padL - 8) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" fill="#6d6d76">' + Math.round(max * f) + '</text>';
+  });
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Daily pageviews vs clicks">' + grid + bars + '</svg>';
+}
+async function loadAnalytics(){
+  await ensureAnalytics();
+  const pv = anPageviews(), cl = anClicks();
+  $('#an-pv30').textContent = pv.length;
+  $('#an-cl30').textContent = cl.length;
+  $('#an-pv7').textContent = anSince(pv, sevenDaysAgoISO()).length;
+  const refs = groupCount(pv, (e) => cleanRef(e.referrer)).filter((r) => r.name);
+  $('#an-ref').textContent = refs.length;
+  const chart = $('#analytics-chart');
+  if (Analytics.err && !Analytics.events.length){ chart.innerHTML = '<p class="empty">' + escapeHtml(Analytics.err.message) + '</p>'; }
+  else chart.innerHTML = groupedBarChartSVG(anDaily());
+  const top = groupCount(pv, (e) => cleanPage(e.page)).slice(0, 5);
+  $('#analytics-top5').innerHTML = barRowsHTML(top, pv.length);
+}
+
+/* ================= 3. PAGE VIEWS ================= */
+const PV = { limit: 200, filter: '', page: '' };
+async function loadPageviews(){
+  await ensureAnalytics();
+  paintPageviews();
+  /* page filter options */
+  const pages = [...new Set(anPageviews().map((e) => cleanPage(e.page)))].sort();
+  const sel = $('#pv-page-filter');
+  const cur = PV.page;
+  sel.innerHTML = '<option value="">All pages</option>' + pages.map((p) =>
+    '<option value="' + escapeHtml(p) + '"' + (p === cur ? ' selected' : '') + '>' + escapeHtml(p) + '</option>').join('');
+}
+function paintPageviews(){
+  const list = anPageviews().filter((e) => {
+    if (PV.page && cleanPage(e.page) !== PV.page) return false;
+    if (PV.filter){
+      const hay = (cleanPage(e.page) + ' ' + (e.referrer || '')).toLowerCase();
+      if (hay.indexOf(PV.filter) === -1) return false;
+    }
+    return true;
+  });
+  const tb = $('#pv-tbody');
+  if (Analytics.err && !Analytics.events.length){ tb.innerHTML = '<tr><td colspan="3" class="empty">' + escapeHtml(Analytics.err.message) + '</td></tr>'; return; }
+  const slice = list.slice(0, PV.limit);
+  if (!slice.length){ tb.innerHTML = '<tr><td colspan="3" class="empty">No pageviews match.</td></tr>'; }
+  else tb.innerHTML = slice.map((e) =>
+    '<tr><td><span class="mono">' + escapeHtml(cleanPage(e.page)) + '</span></td>' +
+    '<td class="clip">' + escapeHtml(cleanRef(e.referrer) || '— direct —') + '</td>' +
+    '<td class="mono">' + escapeHtml(fmtDate(e.created_at)) + '</td></tr>').join('');
+  $('#pv-more').classList.toggle('hidden', list.length <= PV.limit);
+  $('#pv-more').textContent = 'Load more (' + Math.min(PV.limit, list.length) + ' of ' + list.length + ')';
+}
+function initPageviews(){
+  $('#pv-search').addEventListener('input', (e) => { PV.filter = e.target.value.trim().toLowerCase(); PV.limit = 200; paintPageviews(); });
+  $('#pv-page-filter').addEventListener('change', (e) => { PV.page = e.target.value; PV.limit = 200; paintPageviews(); });
+  $('#pv-more').addEventListener('click', () => { PV.limit += 200; paintPageviews(); });
+}
+
+/* ================= 4. CLICK EVENTS ================= */
+const CK = { limit: 200 };
+async function loadClicks(){
+  await ensureAnalytics();
+  const clicks = anClicks();
+  const groups = groupCount(clicks, (e) => String(e.label || '').trim() || '(no label)');
+  $('#click-chips').innerHTML = groups.length
+    ? groups.slice(0, 12).map((g) => '<span class="chip"><b>' + g.count + '</b>' + escapeHtml(g.name) + '</span>').join('')
+    : '<p class="empty">No click events yet.</p>';
+  paintClicks();
+}
+function paintClicks(){
+  const clicks = anClicks();
+  const tb = $('#click-tbody');
+  if (Analytics.err && !Analytics.events.length){ tb.innerHTML = '<tr><td colspan="3" class="empty">' + escapeHtml(Analytics.err.message) + '</td></tr>'; return; }
+  const slice = clicks.slice(0, CK.limit);
+  if (!slice.length){ tb.innerHTML = '<tr><td colspan="3" class="empty">No click events yet.</td></tr>'; }
+  else tb.innerHTML = slice.map((e) =>
+    '<tr><td>' + escapeHtml(e.label || '—') + '</td>' +
+    '<td class="clip"><span class="mono">' + escapeHtml(cleanPage(e.page)) + '</span></td>' +
+    '<td class="mono">' + escapeHtml(fmtDate(e.created_at)) + '</td></tr>').join('');
+  $('#click-more').classList.toggle('hidden', clicks.length <= CK.limit);
+  $('#click-more').textContent = 'Load more (' + Math.min(CK.limit, clicks.length) + ' of ' + clicks.length + ')';
+}
+function initClicks(){ $('#click-more').addEventListener('click', () => { CK.limit += 200; paintClicks(); }); }
+
+/* ================= 5. REFERRERS ================= */
+async function loadReferrers(){
+  await ensureAnalytics();
+  const pv = anPageviews();
+  const groups = groupCount(pv, (e) => cleanRef(e.referrer));
+  const known = groups.filter((g) => g.name);
+  const direct = pv.length - known.reduce((s, g) => s + g.count, 0);
+  const all = known.concat(direct > 0 ? [{ name: '— direct —', count: direct }] : []);
+  $('#ref-list').innerHTML = barRowsHTML(all.slice(0, 15), pv.length);
+}
+
+/* ================= 6. DAILY TRAFFIC ================= */
+async function loadDaily(){
+  await ensureAnalytics();
+  const days = anDaily().slice().reverse();
+  $('#daily-tbody').innerHTML = days.map((d) =>
+    '<tr><td>' + escapeHtml(fmtDay(d.date + 'T12:00:00')) + ' <span class="mono">' + escapeHtml(d.date) + '</span></td>' +
+    '<td><b>' + d.pv + '</b></td><td><b>' + d.clicks + '</b></td>' +
+    '<td class="mono">' + (d.pv + d.clicks) + '</td></tr>').join('');
+}
+
+/* ================= 7. TOP PAGES ================= */
+async function loadTopPages(){
+  await ensureAnalytics();
+  const pv = anPageviews();
+  const groups = groupCount(pv, (e) => cleanPage(e.page)).slice(0, 20);
+  $('#toppages-list').innerHTML = barRowsHTML(groups, pv.length);
+}
+
+/* ================= 8. DEVICES ================= */
+async function loadDevices(){
+  await ensureAnalytics();
+  const pv = anPageviews();
+  const browsers = groupCount(pv, (e) => detectBrowser(e.user_agent));
+  const os = groupCount(pv, (e) => detectOS(e.user_agent));
+  $('#dev-browsers').innerHTML = barRowsHTML(browsers, pv.length, 'blue');
+  $('#dev-os').innerHTML = barRowsHTML(os, pv.length, 'green');
+}
+
+/* ================= single-row helpers ================= */
+async function getSingleRow(table){
+  const client = requireClient(); if (!client) return null;
+  try {
+    const { data, error } = await client.from(table).select('*').eq('id', 1).maybeSingle();
+    if (error) throw error;
+    return data || {};
+  } catch(e){ errToast(e, 'Failed to load ' + table); return null; }
+}
+async function upsertSingle(table, knownCols, values, logLabel){
+  const client = requireClient(); if (!client) return false;
+  try {
+    const payload = { id: 1 };
+    knownCols.forEach((k) => { if (values[k] !== undefined) payload[k] = values[k]; });
+    const { error } = await client.from(table).upsert(payload, { onConflict: 'id' });
+    if (error) throw error;
+    toast('Saved ✓', 'success');
+    logActivity('save:' + table, logLabel || '');
+    return true;
+  } catch(e){ errToast(e, 'Save failed'); return false; }
+}
+
+/* ================= 9. HERO ================= */
+const heroImg = wireUpload('hero-image-file', 'hero-image-preview');
+const heroVid = wireUpload('hero-video-file', 'hero-video-preview');
+const HERO_COLS = ['greeting','name','roles','description','cta_primary_text','cta_primary_link','cta_secondary_text','cta_secondary_link','image_url','video_url'];
+async function loadHero(){
+  const row = await getSingleRow('hero'); if (!row) return;
+  $('#hero-greeting').value = row.greeting || '';
+  $('#hero-name').value = row.name || '';
+  $('#hero-roles').value = row.roles || '';
+  $('#hero-description').value = row.description || '';
+  $('#hero-cta1-text').value = row.cta_primary_text || '';
+  $('#hero-cta1-link').value = row.cta_primary_link || '';
+  $('#hero-cta2-text').value = row.cta_secondary_text || '';
+  $('#hero-cta2-link').value = row.cta_secondary_link || '';
+  heroImg.show(row.image_url); heroVid.show(row.video_url);
+}
+function initHero(){
+  $('#hero-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = $('#hero-save'), prog = $('#hero-progress');
+    setBusy(btn, true, 'Saving…');
+    let image_url, video_url;
+    if (heroImg.file){ const u = await uploadFile(heroImg.file, 'hero', prog); if (!u){ setBusy(btn, false); return; } image_url = u; }
+    if (heroVid.file){ const u = await uploadFile(heroVid.file, 'hero', prog); if (!u){ setBusy(btn, false); return; } video_url = u; }
+    const ok = await upsertSingle('hero', HERO_COLS, {
+      greeting: $('#hero-greeting').value.trim(),
+      name: $('#hero-name').value.trim(),
+      roles: $('#hero-roles').value.trim(),
+      description: $('#hero-description').value.trim(),
+      cta_primary_text: $('#hero-cta1-text').value.trim(),
+      cta_primary_link: $('#hero-cta1-link').value.trim(),
+      cta_secondary_text: $('#hero-cta2-text').value.trim(),
+      cta_secondary_link: $('#hero-cta2-link').value.trim(),
+      image_url, video_url
+    }, 'hero section');
+    setBusy(btn, false);
+    if (ok){ heroImg.reset(); heroVid.reset(); loadHero(); }
+  });
+}
+
+/* ================= 10. ABOUT ================= */
+const aboutImg = wireUpload('about-image-file', 'about-image-preview');
+const ABOUT_COLS = ['heading','intro','background','highlights','image_url'];
+async function loadAbout(){
+  const row = await getSingleRow('about'); if (!row) return;
+  $('#about-heading').value = row.heading || '';
+  $('#about-intro').value = row.intro || '';
+  $('#about-background').value = row.background || '';
+  $('#about-highlights').value = row.highlights || '';
+  aboutImg.show(row.image_url);
+}
+function initAbout(){
+  $('#about-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = $('#about-save'), prog = $('#about-progress');
+    setBusy(btn, true, 'Saving…');
+    let image_url;
+    if (aboutImg.file){ const u = await uploadFile(aboutImg.file, 'about', prog); if (!u){ setBusy(btn, false); return; } image_url = u; }
+    const ok = await upsertSingle('about', ABOUT_COLS, {
+      heading: $('#about-heading').value.trim(),
+      intro: $('#about-intro').value.trim(),
+      background: $('#about-background').value.trim(),
+      highlights: $('#about-highlights').value.trim(),
+      image_url
+    }, 'about section');
+    setBusy(btn, false);
+    if (ok){ aboutImg.reset(); loadAbout(); }
+  });
+}
+
+/* ================= 11. SKILLS ================= */
+const crudSkills = defineCrud({
+  table: 'skills', tbodyId: 'skills-tbody', addBtnId: 'skills-add', searchId: 'skills-search',
+  modalTitle: 'Skill',
+  order: [['display_order', 'asc'], ['created_at', 'asc']],
+  fields: [
+    { key: 'name', label: 'Name', type: 'text', required: true, placeholder: 'JavaScript' },
+    { key: 'icon', label: 'Icon (Font Awesome class)', type: 'text', placeholder: 'fa-brands fa-js' },
+    { key: 'level', label: 'Level', type: 'text', placeholder: 'Expert / 90%' },
+    { key: 'display_order', label: 'Display order', type: 'number' }
+  ],
+  cols: [
+    { key: 'name', label: 'Name', render: (v, r) => '<strong>' + escapeHtml(r.name) + '</strong>' },
+    { key: 'level', label: 'Level' },
+    { key: 'icon', label: 'Icon', render: (v) => v ? '<span class="mono">' + escapeHtml(v) + '</span>' : '–' },
+    { key: 'display_order', label: 'Order' }
+  ],
+  describe: (v) => v.name || 'skill',
+  emptyText: 'No skills yet — add your first one.'
+});
+
+/* ================= 13. SERVICES ================= */
+const crudServices = defineCrud({
+  table: 'services', tbodyId: 'services-tbody', addBtnId: 'services-add', searchId: 'services-search',
+  modalTitle: 'Service', wide: true,
+  order: [['display_order', 'asc'], ['created_at', 'asc']],
+  fields: [
+    { key: 'title', label: 'Title', type: 'text', required: true, full: true },
+    { key: 'description', label: 'Description', type: 'textarea', rows: 3, full: true },
+    { key: 'icon', label: 'Icon (Font Awesome class)', type: 'text', placeholder: 'fa-solid fa-code' },
+    { key: 'display_order', label: 'Display order', type: 'number' }
+  ],
+  cols: [
+    { key: 'title', label: 'Title', render: (v, r) => '<strong>' + escapeHtml(r.title) + '</strong>' },
+    { key: 'description', label: 'Description', clip: true },
+    { key: 'icon', label: 'Icon', render: (v) => v ? '<span class="mono">' + escapeHtml(v) + '</span>' : '–' },
+    { key: 'display_order', label: 'Order' }
+  ],
+  describe: (v) => v.title || 'service',
+  emptyText: 'No services yet — add your first one.'
+});
+
+/* ================= 14. PLANS ================= */
+const crudPlans = defineCrud({
+  table: 'plans', tbodyId: 'plans-tbody', addBtnId: 'plans-add', searchId: 'plans-search',
+  modalTitle: 'Plan', wide: true,
+  order: [['display_order', 'asc'], ['created_at', 'asc']],
+  fields: [
+    { key: 'name', label: 'Name', type: 'text', required: true },
+    { key: 'price', label: 'Price', type: 'text', required: true, placeholder: '$399' },
+    { key: 'period', label: 'Period', type: 'text', placeholder: 'one-time / /month' },
+    { key: 'tag', label: 'Tag', type: 'text', placeholder: 'BEST VALUE' },
+    { key: 'description', label: 'Description', type: 'textarea', rows: 2, full: true },
+    { key: 'features', label: 'Features (one per line)', type: 'textarea', rows: 5, full: true, list: true },
+    { key: 'cta_text', label: 'CTA text', type: 'text', placeholder: 'Choose Business' },
+    { key: 'cta_link', label: 'CTA link', type: 'text', placeholder: '/contact' },
+    { key: 'highlighted', label: 'Highlighted plan', type: 'checkbox' },
+    { key: 'display_order', label: 'Display order', type: 'number' }
+  ],
+  cols: [
+    { key: 'name', label: 'Name', render: (v, r) =>
+      '<strong>' + escapeHtml(r.name) + '</strong>' + (r.tag ? ' <span class="pill pill-orange">' + escapeHtml(r.tag) + '</span>' : '') },
+    { key: 'price', label: 'Price', render: (v, r) => '<strong>' + escapeHtml(v || '–') + '</strong>' + (r.period ? ' <span class="mono">' + escapeHtml(r.period) + '</span>' : '') },
+    { key: 'highlighted', label: 'Highlighted', render: (v) => v ? '<span class="pill pill-green">Yes</span>' : '<span class="pill pill-gray">No</span>' },
+    { key: 'display_order', label: 'Order' }
+  ],
+  describe: (v) => v.name || 'plan',
+  emptyText: 'No plans yet — add your first one.'
+});
+
+/* ================= 12. PROJECTS (custom modal) ================= */
+const projCover = wireUpload('project-cover-file', 'project-cover-preview');
+const projVideo = wireUpload('project-video-file', 'project-video-preview');
+const galleryState = { files: [], existing: [] };
+const projState = { rows: [], filter: '' };
+
+function renderGalleryPreviews(){
+  const wrap = $('#project-gallery-previews');
+  wrap.innerHTML = '';
+  galleryState.existing.forEach((url, i) => {
+    const d = document.createElement('div');
+    d.className = 'thumb-item';
+    const img = document.createElement('img');
+    img.src = url; img.alt = 'gallery image';
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.title = 'Remove'; btn.textContent = '×';
+    btn.addEventListener('click', () => { galleryState.existing.splice(i, 1); renderGalleryPreviews(); });
+    d.appendChild(img); d.appendChild(btn);
+    wrap.appendChild(d);
+  });
+  galleryState.files.forEach((f, i) => {
+    const d = document.createElement('div');
+    d.className = 'thumb-item';
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(f); img.alt = 'new gallery image';
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.title = 'Remove'; btn.textContent = '×';
+    btn.addEventListener('click', () => { galleryState.files.splice(i, 1); renderGalleryPreviews(); });
+    d.appendChild(img); d.appendChild(btn);
+    wrap.appendChild(d);
+  });
+}
+async function loadProjects(){
+  const client = requireClient(); if (!client) return;
+  const grid = $('#projects-grid');
+  try {
+    const { data, error } = await client.from('projects').select('*')
+      .order('display_order', { ascending: true }).order('created_at', { ascending: false });
+    if (error) throw error;
+    projState.rows = data || [];
+    paintProjects();
+  } catch(e){ grid.innerHTML = '<p class="empty">' + escapeHtml(e.message) + '</p>'; }
+}
+function paintProjects(){
+  const grid = $('#projects-grid');
+  const f = projState.filter.toLowerCase();
+  const list = projState.rows.filter((p) => !f || JSON.stringify(p).toLowerCase().indexOf(f) !== -1);
+  if (!list.length){ grid.innerHTML = '<p class="empty">No projects found — add your first one.</p>'; return; }
+  grid.innerHTML = list.map((p) =>
+    '<div class="proj-card">' +
+      (p.cover_image_url
+        ? '<img class="pcover" src="' + escapeHtml(p.cover_image_url) + '" alt="' + escapeHtml(p.name) + '" loading="lazy">'
+        : '<div class="pcover-ph">No image</div>') +
+      '<div class="proj-body">' +
+        '<div class="proj-name">' + escapeHtml(p.name) + (p.featured ? ' <span class="pill pill-orange">Featured</span>' : '') + '</div>' +
+        '<div class="proj-cat">' + escapeHtml(p.category || 'Uncategorized') + ' · <span class="mono">' + escapeHtml(p.slug || '') + '</span></div>' +
+        '<div class="proj-actions">' +
+          '<button class="btn btn-ghost btn-sm" data-proj-edit="' + p.id + '" type="button">Edit</button>' +
+          '<button class="btn btn-danger-outline btn-sm" data-proj-del="' + p.id + '" type="button">Delete</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>').join('');
+  $$('[data-proj-edit]').forEach((b) => b.addEventListener('click', () => {
+    const row = projState.rows.find((x) => String(x.id) === b.dataset.projEdit);
+    if (row) openProjectModal(row);
+  }));
+  $$('[data-proj-del]').forEach((b) => b.addEventListener('click', () => deleteProject(b.dataset.projDel)));
+}
+function openProjectModal(row){
+  $('#project-modal-title').textContent = row ? 'Edit Project' : 'Add Project';
+  $('#project-id').value = row ? row.id : '';
+  $('#project-name').value = row ? row.name || '' : '';
+  $('#project-slug').value = row ? row.slug || '' : '';
+  $('#project-description').value = row ? row.description || '' : '';
+  $('#project-category').value = row ? row.category || '' : '';
+  $('#project-order').value = row ? (row.display_order == null ? 0 : row.display_order) : 0;
+  $('#project-live').value = row ? row.live_demo_url || '' : '';
+  $('#project-github').value = row ? row.github_url || '' : '';
+  $('#project-featured').checked = !!(row && row.featured);
+  projCover.reset(); projVideo.reset();
+  projCover.show(row && row.cover_image_url);
+  projVideo.show(row && row.video_url);
+  galleryState.files = [];
+  galleryState.existing = row && Array.isArray(row.gallery_urls) ? row.gallery_urls.slice() : [];
+  $('#project-gallery-files').value = '';
+  renderGalleryPreviews();
+  openModal('modal-project');
+}
+async function deleteProject(id){
+  const client = requireClient(); if (!client) return;
+  const row = projState.rows.find((x) => String(x.id) === String(id));
+  const ok = await confirmDialog('Delete project?', '"' + (row ? row.name : 'This project') + '" will be permanently deleted.', 'Delete');
+  if (!ok) return;
+  try {
+    const { error } = await client.from('projects').delete().eq('id', id);
+    if (error) throw error;
+    toast('Project deleted', 'success');
+    logActivity('delete:projects', row ? row.name : id);
+    await loadProjects();
+  } catch(e){ errToast(e, 'Delete failed'); }
+}
+function initProjects(){
+  $('#projects-add').addEventListener('click', () => openProjectModal(null));
+  $('#projects-search').addEventListener('input', (e) => { projState.filter = e.target.value; paintProjects(); });
+  $('#project-name').addEventListener('input', (e) => {
+    if (!$('#project-id').value) $('#project-slug').value = slugify(e.target.value);
+  });
+  $('#project-gallery-files').addEventListener('change', (e) => {
+    galleryState.files = galleryState.files.concat(Array.from(e.target.files || []));
+    renderGalleryPreviews();
+  });
+  $('#project-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const client = requireClient(); if (!client) return;
+    const btn = $('#project-save'), prog = $('#project-progress');
+    setBusy(btn, true, 'Saving…');
+    try {
+      let cover_image_url = $('#project-cover-preview').classList.contains('hidden') ? '' : ($('#project-cover-preview').src || '');
+      if (projCover.file){
+        const u = await uploadFile(projCover.file, 'projects/cover', prog);
+        if (!u) throw new Error('__abort');
+        cover_image_url = u;
+      }
+      let video_url = $('#project-video-preview').classList.contains('hidden') ? '' : ($('#project-video-preview').src || '');
+      if (projVideo.file){
+        const u = await uploadFile(projVideo.file, 'projects/video', prog);
+        if (!u) throw new Error('__abort');
+        video_url = u;
+      }
+      const gallery_urls = galleryState.existing.slice();
+      for (const f of galleryState.files){
+        const u = await uploadFile(f, 'projects/gallery', prog);
+        if (!u) throw new Error('__abort');
+        gallery_urls.push(u);
+      }
+      const name = $('#project-name').value.trim();
+      const id = $('#project-id').value;
+      const payload = {
+        name,
+        slug: $('#project-slug').value.trim() || slugify(name),
+        description: $('#project-description').value.trim() || null,
+        category: $('#project-category').value.trim() || null,
+        cover_image_url: cover_image_url || null,
+        gallery_urls,
+        video_url: video_url || null,
+        live_demo_url: $('#project-live').value.trim() || null,
+        github_url: $('#project-github').value.trim() || null,
+        featured: $('#project-featured').checked,
+        display_order: parseInt($('#project-order').value, 10) || 0
+      };
+      let error = null;
+      if (id) ({ error } = await client.from('projects').update(payload).eq('id', id));
+      else ({ error } = await client.from('projects').insert(payload));
+      if (error) throw error;
+      closeModals();
+      toast('Project saved ✓', 'success');
+      logActivity((id ? 'update:' : 'create:') + 'projects', name);
+      await loadProjects();
+    } catch(err){
+      if (err && err.message !== '__abort') errToast(err, 'Save failed');
+    }
+    setBusy(btn, false);
+  });
+}
+
+/* ================= 15. TESTIMONIALS ================= */
+const crudTestimonials = defineCrud({
+  table: 'testimonials', tbodyId: 'testimonials-tbody', addBtnId: 'testimonials-add', searchId: 'testimonials-search',
+  modalTitle: 'Testimonial', wide: true,
+  order: [['display_order', 'asc'], ['created_at', 'asc']],
+  fields: [
+    { key: 'name', label: 'Client name', type: 'text', required: true },
+    { key: 'role', label: 'Role', type: 'text', placeholder: 'Founder' },
+    { key: 'company', label: 'Company', type: 'text', placeholder: 'Company Inc.' },
+    { key: 'rating', label: 'Rating (1–5)', type: 'number', min: 1, max: 5, step: 1, default: 5 },
+    { key: 'text', label: 'Review text', type: 'textarea', rows: 4, required: true, full: true },
+    { key: 'avatar_url', label: 'Avatar image', type: 'file', accept: 'image/*', preview: 'image', full: true },
+    { key: 'display_order', label: 'Display order', type: 'number' }
+  ],
+  cols: [
+    { key: 'name', label: 'Client', render: (v, r) =>
+      '<strong>' + escapeHtml(r.name) + '</strong><br><span class="mono">' + escapeHtml([r.role, r.company].filter(Boolean).join(' · ') || '–') + '</span>' },
+    { key: 'text', label: 'Review', clip: true },
+    { key: 'rating', label: 'Rating', render: (v) => '<span style="color:var(--gold)">★</span> ' + escapeHtml(v == null ? '–' : v) + '/5' },
+    { key: 'display_order', label: 'Order' }
+  ],
+  prepare: prepareUploads('testimonials', ['avatar_url']),
+  describe: (v) => v.name || 'testimonial',
+  emptyText: 'No testimonials yet — add your first one.'
+});
+
+/* ================= 16. BLOG ================= */
+const crudBlog = defineCrud({
+  table: 'blog_posts', tbodyId: 'blog-tbody', addBtnId: 'blog-add', searchId: 'blog-search',
+  modalTitle: 'Blog Post', wide: true,
+  order: [['display_order', 'asc'], ['created_at', 'desc']],
+  fields: [
+    { key: 'title', label: 'Title', type: 'text', required: true, full: true },
+    { key: 'slug', label: 'Slug', type: 'text', required: true, suggestFrom: 'title', hint: 'Auto-generated from the title; used in the post URL.' },
+    { key: 'excerpt', label: 'Excerpt', type: 'textarea', rows: 2, full: true },
+    { key: 'content', label: 'Content', type: 'textarea', rows: 10, full: true },
+    { key: 'cover_url', label: 'Cover image', type: 'file', accept: 'image/*', preview: 'image', full: true },
+    { key: 'published', label: 'Published', type: 'checkbox' },
+    { key: 'published_at', label: 'Publish date', type: 'datetime' },
+    { key: 'display_order', label: 'Display order', type: 'number' }
+  ],
+  cols: [
+    { key: 'title', label: 'Title', render: (v, r) => '<strong>' + escapeHtml(r.title) + '</strong>' },
+    { key: 'slug', label: 'Slug', render: (v) => '<span class="mono">' + escapeHtml(v || '–') + '</span>' },
+    { key: 'published', label: 'Status', render: (v) => v ? '<span class="pill pill-green">Published</span>' : '<span class="pill pill-gray">Draft</span>' },
+    { key: 'published_at', label: 'Published', render: (v) => '<span class="mono">' + escapeHtml(v ? fmtDate(v) : '–') + '</span>' }
+  ],
+  prepare: prepareUploads('blog', ['cover_url']),
+  describe: (v) => v.title || 'blog post',
+  emptyText: 'No blog posts yet — write your first one.'
+});
+
+/* ================= 17. FAQS ================= */
+const crudFaqs = defineCrud({
+  table: 'faqs', tbodyId: 'faqs-tbody', addBtnId: 'faqs-add', searchId: 'faqs-search',
+  modalTitle: 'FAQ', wide: true,
+  order: [['display_order', 'asc'], ['created_at', 'asc']],
+  fields: [
+    { key: 'question', label: 'Question', type: 'text', required: true, full: true },
+    { key: 'answer', label: 'Answer', type: 'textarea', rows: 4, required: true, full: true },
+    { key: 'display_order', label: 'Display order', type: 'number' }
+  ],
+  cols: [
+    { key: 'question', label: 'Question', render: (v, r) => '<strong>' + escapeHtml(r.question) + '</strong>' },
+    { key: 'answer', label: 'Answer', clip: true },
+    { key: 'display_order', label: 'Order' }
+  ],
+  describe: (v) => (v.question || 'faq').slice(0, 80),
+  emptyText: 'No FAQs yet — add your first one.'
+});
+
+/* ================= 18. MEDIA LIBRARY ================= */
+const MEDIA_FOLDERS = ['', 'uploads', 'hero', 'about', 'seo', 'projects', 'projects/cover', 'projects/gallery', 'projects/video', 'testimonials', 'blog'];
+async function loadMedia(){
+  const client = requireClient(); if (!client) return;
+  const grid = $('#media-grid');
+  try {
+    const results = await Promise.allSettled(MEDIA_FOLDERS.map((f) =>
+      client.storage.from('media').list(f, { limit: 200, sortBy: { column: 'created_at', order: 'desc' } })
+        .then((r) => ({ folder: f, data: r.data, error: r.error }))
+    ));
+    const seen = new Set();
+    const files = [];
+    results.forEach((res) => {
+      if (res.status !== 'fulfilled' || !res.value || res.value.error) return;
+      const { folder, data } = res.value;
+      (data || []).forEach((f) => {
+        if (!f || !f.id || f.name === '.emptyFolderPlaceholder') return;
+        const full = folder ? folder + '/' + f.name : f.name;
+        if (seen.has(full)) return;
+        seen.add(full);
+        files.push({ name: f.name, full, size: f.metadata && f.metadata.size, updated: f.updated_at || f.created_at });
+      });
+    });
+    if (!files.length){ grid.innerHTML = '<p class="empty">Bucket is empty — upload your first file.</p>'; return; }
+    grid.innerHTML = files.map((f) => {
+      const { data: u } = client.storage.from('media').getPublicUrl(f.full);
+      const url = u ? u.publicUrl : '';
+      const isImg = /\.(png|jpe?g|gif|webp|svg|avif|bmp|ico)$/i.test(f.name);
+      const isVid = /\.(mp4|webm|mov|ogg)$/i.test(f.name);
+      const kb = f.size ? (f.size > 1048576 ? (f.size / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(f.size / 1024)) + ' KB') : '';
+      return (
+        '<div class="media-card">' +
+          (isImg ? '<img class="mprev" src="' + escapeHtml(url) + '" alt="' + escapeHtml(f.name) + '" loading="lazy">'
+            : isVid ? '<video class="mprev" src="' + escapeHtml(url) + '" preload="metadata"></video>'
+            : '<div class="mprev">' + icon('i-imgs') + '</div>') +
+          '<div class="media-info">' +
+            '<div class="media-name" title="' + escapeHtml(f.full) + '">' + escapeHtml(f.full) + (kb ? ' · ' + kb : '') + '</div>' +
+            '<div class="media-btns">' +
+              '<button class="btn btn-ghost btn-sm" data-media-copy="' + escapeHtml(url) + '" type="button">Copy URL</button>' +
+              '<button class="btn btn-danger-outline btn-sm" data-media-del="' + escapeHtml(f.full) + '" type="button">Delete</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+    $$('[data-media-copy]').forEach((b) => b.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(b.dataset.mediaCopy); toast('URL copied ✓', 'success'); }
+      catch(e){ toast('Copy failed — select the URL manually.', 'error'); }
+    }));
+    $$('[data-media-del]').forEach((b) => b.addEventListener('click', async () => {
+      const ok = await confirmDialog('Delete file?', '"' + b.dataset.mediaDel + '" will be removed from the bucket.', 'Delete');
+      if (!ok) return;
+      try {
+        const { error } = await client.storage.from('media').remove([b.dataset.mediaDel]);
+        if (error) throw error;
+        toast('File deleted', 'success');
+        logActivity('delete:media', b.dataset.mediaDel);
+        await loadMedia();
+      } catch(e){ errToast(e, 'Delete failed'); }
+    }));
+  } catch(e){ grid.innerHTML = '<p class="empty">' + escapeHtml(e.message) + '</p>'; }
+}
+function initMedia(){
+  $('#media-upload').addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const folder = $('#media-folder').value || 'uploads';
+    const prog = $('#media-progress');
+    const url = await uploadFile(file, folder, prog);
+    e.target.value = '';
+    if (url){ toast('Uploaded ✓', 'success'); logActivity('upload:media', folder + '/' + file.name); await loadMedia(); }
+  });
+  $('#media-refresh').addEventListener('click', loadMedia);
+}
+
+/* ================= 19. SOCIAL LINKS ================= */
+const PLATFORM_OPTS = ['WhatsApp','GitHub','LinkedIn','Facebook','Instagram','YouTube','X','TikTok','Dribbble','Behance','Other'];
+const crudSocial = defineCrud({
+  table: 'social_links', tbodyId: 'social-tbody', addBtnId: 'social-add', searchId: 'social-search',
+  modalTitle: 'Social Link',
+  order: [['display_order', 'asc'], ['created_at', 'asc']],
+  fields: [
+    { key: 'platform', label: 'Platform', type: 'select',
+      options: PLATFORM_OPTS.map((p) => ({ value: p, label: p })) },
+    { key: 'url', label: 'URL', type: 'url', required: true, placeholder: 'https://…' },
+    { key: 'display_order', label: 'Display order', type: 'number' }
+  ],
+  cols: [
+    { key: 'platform', label: 'Platform', render: (v, r) => '<strong>' + escapeHtml(r.platform) + '</strong>' },
+    { key: 'url', label: 'URL', render: (v) => '<span class="url-cell"><a href="' + escapeHtml(v) + '" target="_blank" rel="noopener">' + escapeHtml(v) + '</a></span>' },
+    { key: 'display_order', label: 'Order' }
+  ],
+  describe: (v) => v.platform || 'social link',
+  emptyText: 'No social links yet.'
+});
+
+/* ================= 20/23/24. SITE SETTINGS (contact / seo / identity) ================= */
+const CONTACT_COLS = ['whatsapp_number','contact_email'];
+const SEO_COLS = ['meta_description','meta_keywords','og_image_url'];
+const IDENTITY_COLS = ['site_title','footer_tagline'];
+const seoOg = wireUpload('seo-og-file', 'seo-og-preview');
+
+async function loadContact(){
+  const row = await getSingleRow('site_settings'); if (!row) return;
+  $('#contact-whatsapp').value = row.whatsapp_number || '';
+  $('#contact-email').value = row.contact_email || '';
+}
+async function loadSeo(){
+  const row = await getSingleRow('site_settings'); if (!row) return;
+  $('#seo-description').value = row.meta_description || '';
+  $('#seo-keywords').value = row.meta_keywords || '';
+  seoOg.show(row.og_image_url);
+}
+async function loadIdentity(){
+  const row = await getSingleRow('site_settings'); if (!row) return;
+  $('#identity-title').value = row.site_title || '';
+  $('#identity-tagline').value = row.footer_tagline || '';
+}
+function initSettings(){
+  $('#contact-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = $('#contact-save');
+    setBusy(btn, true, 'Saving…');
+    const ok = await upsertSingle('site_settings', CONTACT_COLS, {
+      whatsapp_number: $('#contact-whatsapp').value.trim(),
+      contact_email: $('#contact-email').value.trim()
+    }, 'contact settings');
+    setBusy(btn, false);
+  });
+  $('#seo-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = $('#seo-save'), prog = $('#seo-progress');
+    setBusy(btn, true, 'Saving…');
+    let og_image_url;
+    if (seoOg.file){
+      const u = await uploadFile(seoOg.file, 'seo', prog);
+      if (!u){ setBusy(btn, false); return; }
+      og_image_url = u;
+    }
+    const ok = await upsertSingle('site_settings', SEO_COLS, {
+      meta_description: $('#seo-description').value.trim(),
+      meta_keywords: $('#seo-keywords').value.trim(),
+      og_image_url
+    }, 'SEO settings');
+    setBusy(btn, false);
+    if (ok) seoOg.reset();
+  });
+  $('#identity-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = $('#identity-save');
+    setBusy(btn, true, 'Saving…');
+    const ok = await upsertSingle('site_settings', IDENTITY_COLS, {
+      site_title: $('#identity-title').value.trim(),
+      footer_tagline: $('#identity-tagline').value.trim()
+    }, 'site identity');
+    setBusy(btn, false);
+  });
+}
+
+/* ================= 21. MESSAGES ================= */
+const MSG = { rows: [], filter: 'all' };
+async function loadMessages(){
+  const client = requireClient(); if (!client) return;
+  const list = $('#messages-list');
+  try {
+    const { data, error } = await client.from('contact_messages').select('*').order('created_at', { ascending: false }).limit(150);
+    if (error) throw error;
+    MSG.rows = data || [];
+    paintMessages();
+    await updateMsgBadge();
+  } catch(e){ list.innerHTML = '<p class="empty">' + escapeHtml(e.message) + '</p>'; }
+}
+function paintMessages(){
+  const list = $('#messages-list');
+  const rows = MSG.rows.filter((m) => {
+    if (MSG.filter === 'unread') return !m.is_read;
+    if (MSG.filter === 'read') return m.is_read;
+    return true;
+  });
+  if (!rows.length){ list.innerHTML = '<p class="empty">No messages here.</p>'; return; }
+  list.innerHTML = rows.map((m) =>
+    '<div class="msg-card' + (m.is_read ? '' : ' unread') + '">' +
+      '<div class="msg-head"><div><span class="msg-name">' + escapeHtml(m.name) + '</span> ' +
+      '<span class="msg-email">&lt;' + escapeHtml(m.email) + '&gt;</span> ' +
+      (m.is_read ? '' : '<span class="pill pill-orange">New</span>') + '</div>' +
+      '<span class="msg-date">' + escapeHtml(fmtDate(m.created_at)) + '</span></div>' +
+      '<div class="msg-body">' + escapeHtml(m.message) + '</div>' +
+      '<div class="msg-actions">' +
+        '<button class="btn btn-ghost btn-sm" data-msg-toggle="' + m.id + '" data-read="' + (m.is_read ? '1' : '0') + '" type="button">' + (m.is_read ? 'Mark Unread' : 'Mark Read') + '</button>' +
+        '<button class="btn btn-danger-outline btn-sm" data-msg-del="' + m.id + '" type="button">Delete</button>' +
+      '</div>' +
+    '</div>').join('');
+  $$('[data-msg-toggle]').forEach((b) => b.addEventListener('click', async () => {
+    const client = requireClient(); if (!client) return;
+    try {
+      const { error } = await client.from('contact_messages').update({ is_read: b.dataset.read !== '1' }).eq('id', b.dataset.msgToggle);
+      if (error) throw error;
+      logActivity('update:contact_messages', 'mark ' + (b.dataset.read !== '1' ? 'read' : 'unread'));
+      await loadMessages();
+    } catch(e){ errToast(e, 'Update failed'); }
+  }));
+  $$('[data-msg-del]').forEach((b) => b.addEventListener('click', async () => {
+    const client = requireClient(); if (!client) return;
+    const ok = await confirmDialog('Delete message?', 'This message will be permanently deleted.', 'Delete');
+    if (!ok) return;
+    try {
+      const { error } = await client.from('contact_messages').delete().eq('id', b.dataset.msgDel);
+      if (error) throw error;
+      toast('Message deleted', 'success');
+      logActivity('delete:contact_messages', 'message deleted');
+      await loadMessages();
+    } catch(e){ errToast(e, 'Delete failed'); }
+  }));
+}
+function initMessages(){
+  $('#messages-refresh').addEventListener('click', loadMessages);
+  $('#msg-filter').addEventListener('change', (e) => { MSG.filter = e.target.value; paintMessages(); });
+}
+
+/* ================= 22. SUBSCRIBERS ================= */
+const SUBS = { rows: [], filter: '' };
+async function loadSubscribers(){
+  const client = requireClient(); if (!client) return;
+  const tb = $('#subs-tbody');
+  try {
+    const { data, error } = await client.from('subscribers').select('*').order('created_at', { ascending: false }).limit(500);
+    if (error) throw error;
+    SUBS.rows = data || [];
+    paintSubscribers();
+  } catch(e){ tb.innerHTML = '<tr><td colspan="3" class="empty">' + escapeHtml(e.message) + '</td></tr>'; }
+}
+function paintSubscribers(){
+  const tb = $('#subs-tbody');
+  const f = SUBS.filter.toLowerCase();
+  const rows = SUBS.rows.filter((s) => !f || String(s.email || '').toLowerCase().indexOf(f) !== -1);
+  if (!rows.length){ tb.innerHTML = '<tr><td colspan="3" class="empty">No subscribers yet.</td></tr>'; return; }
+  tb.innerHTML = rows.map((s) =>
+    '<tr><td><strong>' + escapeHtml(s.email) + '</strong></td>' +
+    '<td class="mono">' + escapeHtml(fmtDate(s.created_at)) + '</td>' +
+    '<td class="actions-col"><button class="btn btn-danger-outline btn-sm" data-sub-del="' + s.id + '" type="button">Delete</button></td></tr>'
+  ).join('');
+  $$('[data-sub-del]').forEach((b) => b.addEventListener('click', async () => {
+    const client = requireClient(); if (!client) return;
+    const ok = await confirmDialog('Remove subscriber?', 'This email will be removed from the newsletter list.', 'Remove');
+    if (!ok) return;
+    try {
+      const { error } = await client.from('subscribers').delete().eq('id', b.dataset.subDel);
+      if (error) throw error;
+      toast('Subscriber removed', 'success');
+      logActivity('delete:subscribers', 'subscriber removed');
+      await loadSubscribers();
+    } catch(e){ errToast(e, 'Delete failed'); }
+  }));
+}
+function initSubscribers(){
+  $('#subs-search').addEventListener('input', (e) => { SUBS.filter = e.target.value; paintSubscribers(); });
+  $('#subs-export').addEventListener('click', () => {
+    if (!SUBS.rows.length){ toast('Nothing to export.', 'error'); return; }
+    const csv = 'email,subscribed_at\n' + SUBS.rows.map((s) =>
+      '"' + String(s.email || '').replace(/"/g, '""') + '",' + (s.created_at || '')).join('\n');
+    downloadFile('subscribers-' + dayKey(new Date().toISOString()) + '.csv', csv, 'text/csv');
+    toast('CSV downloaded ✓', 'success');
+    logActivity('export:subscribers', SUBS.rows.length + ' rows exported as CSV');
+  });
+}
+
+/* ================= 25. ADMIN USERS ================= */
+const crudAdminUsers = defineCrud({
+  table: 'admin_users', keyCol: 'username', tbodyId: 'adminusers-tbody', addBtnId: 'adminusers-add', searchId: null,
+  modalTitle: 'Admin User',
+  order: [['username', 'asc']],
+  fields: [
+    { key: 'username', label: 'Username', type: 'text', required: true, readonlyOnEdit: true,
+      hint: 'Lowercase, no spaces. Used on the login form; cannot be changed later.' },
+    { key: 'email', label: 'Email', type: 'email', required: true, placeholder: 'you@example.com',
+      hint: 'Must match a real user in Supabase Authentication.' }
+  ],
+  cols: [
+    { key: 'username', label: 'Username', render: (v, r) => '<strong class="mono">' + escapeHtml(r.username) + '</strong>' },
+    { key: 'email', label: 'Email', render: (v) => escapeHtml(v || '–') }
+  ],
+  prepare: async (payload, files, current, row) => {
+    if (!row && payload.username) payload.username = String(payload.username).toLowerCase().trim();
+    return payload;
+  },
+  describe: (v) => v.username || 'admin user',
+  emptyText: 'No admin users mapped.'
+});
+
+/* ================= 26. ACTIVITY LOG ================= */
+const ACT = { limit: 50 };
+async function loadActivity(){
+  const client = requireClient(); if (!client) return;
+  paintActivity(true);
+}
+async function paintActivity(reset){
+  const client = requireClient(); if (!client) return;
+  const tb = $('#activity-tbody');
+  if (reset) ACT.limit = 50;
+  try {
+    const { data, error } = await client.from('activity_log').select('*')
+      .order('created_at', { ascending: false }).limit(ACT.limit);
+    if (error) throw error;
+    if (!data || !data.length){ tb.innerHTML = '<tr><td colspan="3" class="empty">No activity yet.</td></tr>'; return; }
+    tb.innerHTML = data.map((a) =>
+      '<tr><td><span class="pill pill-blue mono">' + escapeHtml(a.action) + '</span></td>' +
+      '<td class="clip">' + escapeHtml(a.detail || '–') + '</td>' +
+      '<td class="mono">' + escapeHtml(fmtDate(a.created_at)) + '</td></tr>').join('');
+    $('#activity-more').classList.toggle('hidden', data.length < ACT.limit);
+    $('#activity-more').textContent = 'Load more (' + data.length + ' shown)';
+  } catch(e){ tb.innerHTML = '<tr><td colspan="3" class="empty">' + escapeHtml(e.message) + '</td></tr>'; }
+}
+function initActivity(){
+  $('#activity-refresh').addEventListener('click', () => paintActivity(true));
+  $('#activity-more').addEventListener('click', () => { ACT.limit += 50; paintActivity(false); });
+}
+
+/* ================= 27. CHANGE PASSWORD ================= */
+function initPassword(){
+  $('#password-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const client = requireClient(); if (!client) return;
+    const btn = $('#pw-save'), errEl = $('#pw-error');
+    errEl.classList.add('hidden'); errEl.textContent = '';
+    const p1 = $('#pw-new').value, p2 = $('#pw-confirm').value;
+    if (p1.length < 6){ errEl.textContent = 'Password must be at least 6 characters.'; errEl.classList.remove('hidden'); return; }
+    if (p1 !== p2){ errEl.textContent = 'Passwords do not match.'; errEl.classList.remove('hidden'); return; }
+    setBusy(btn, true, 'Updating…');
+    try {
+      const { error } = await client.auth.updateUser({ password: p1 });
+      if (error) throw error;
+      $('#pw-new').value = ''; $('#pw-confirm').value = '';
+      toast('Password updated ✓', 'success');
+      logActivity('update:auth', 'password changed');
+    } catch(err){
+      errEl.textContent = err.message || 'Update failed';
+      errEl.classList.remove('hidden');
+    }
+    setBusy(btn, false);
+  });
+}
+
+/* ================= 28. EXPORT & BACKUP ================= */
+const BACKUP_TABLES = [
+  ['hero', 'Hero'], ['about', 'About'], ['site_settings', 'Site Settings'],
+  ['skills', 'Skills'], ['projects', 'Projects'], ['services', 'Services'],
+  ['social_links', 'Social Links'], ['plans', 'Plans'], ['testimonials', 'Testimonials'],
+  ['blog_posts', 'Blog Posts'], ['faqs', 'FAQs'], ['subscribers', 'Subscribers'],
+  ['contact_messages', 'Messages'], ['admin_users', 'Admin Users'],
+  ['activity_log', 'Activity Log'], ['analytics_events', 'Analytics Events']
+];
+async function loadBackup(){
+  const client = requireClient(); if (!client) return;
+  const wrap = $('#backup-list');
+  try {
+    const counts = await Promise.all(BACKUP_TABLES.map(async ([t]) => {
+      try {
+        const { count } = await client.from(t).select('id', { count: 'exact', head: true });
+        return count || 0;
+      } catch(e){ return '–'; }
+    }));
+    wrap.innerHTML = BACKUP_TABLES.map(([t, label], i) =>
+      '<button class="btn btn-ghost btn-sm" data-backup="' + t + '" type="button">' + icon('i-dl') +
+      ' ' + escapeHtml(label) + ' <span class="mono">(' + counts[i] + ')</span></button>'
+    ).join('');
+    $$('[data-backup]').forEach((b) => b.addEventListener('click', () => exportTable(b.dataset.backup)));
+  } catch(e){ wrap.innerHTML = '<p class="empty">' + escapeHtml(e.message) + '</p>'; }
+}
+async function exportTable(table){
+  const client = requireClient(); if (!client) return;
+  toast('Preparing ' + table + '…');
+  try {
+    const big = (table === 'analytics_events' || table === 'activity_log');
+    let q = client.from(table).select('*').order('created_at', { ascending: false });
+    if (big) q = q.limit(5000);
+    const { data, error } = await q;
+    if (error) throw error;
+    downloadFile(table + '-' + dayKey(new Date().toISOString()) + '.json', JSON.stringify(data || [], null, 2), 'application/json');
+    toast(table + ' downloaded ✓ (' + (data || []).length + ' rows)', 'success');
+    logActivity('export:' + table, (data || []).length + ' rows exported as JSON');
+  } catch(e){ errToast(e, 'Export failed'); }
+}
+
+/* ================= 29. SYSTEM STATUS ================= */
+async function loadStatus(){
+  const client = requireClient();
+  const wrap = $('#status-list');
+  const rows = [];
+  const dot = (ok) => '<span class="status-dot ' + (ok ? 'dot-ok' : 'dot-bad') + '"></span>';
+  rows.push({ label: 'Supabase config (assets/js/config.js)', ok: !!CFG, detail: CFG ? 'URL + anon key present' : 'Missing or placeholder values' });
+  rows.push({ label: 'Supabase client', ok: !!sb, detail: sb ? 'Client initialized' : 'Not initialized' });
+  let sessionOk = false, sessionDetail = 'Not signed in';
+  if (sb){
+    try {
+      const { data } = await sb.auth.getSession();
+      sessionOk = !!(data && data.session);
+      sessionDetail = sessionOk ? 'Signed in as ' + (data.session.user.email || 'admin') : 'Signed in session not found';
+    } catch(e){ sessionDetail = e.message; }
+  }
+  rows.push({ label: 'Auth session', ok: sessionOk, detail: sessionDetail });
+  if (client){
+    const counts = await Promise.all(BACKUP_TABLES.map(async ([t]) => {
+      try {
+        const { count, error } = await client.from(t).select('id', { count: 'exact', head: true });
+        if (error) throw error;
+        return { ok: true, detail: String(count || 0) + ' rows' };
+      } catch(e){ return { ok: false, detail: e.message }; }
+    }));
+    BACKUP_TABLES.forEach(([t, label], i) => rows.push({ label: 'Table: ' + t, ok: counts[i].ok, detail: counts[i].detail }));
+    try {
+      const { error } = await client.storage.from('media').list('', { limit: 1 });
+      rows.push({ label: 'Storage bucket: media', ok: !error, detail: error ? error.message : 'Bucket reachable' });
+    } catch(e){ rows.push({ label: 'Storage bucket: media', ok: false, detail: e.message }); }
+  }
+  wrap.innerHTML = '<dl class="kv" style="grid-template-columns:minmax(220px,1fr) 2fr">' +
+    rows.map((r) => '<dt>' + dot(r.ok) + escapeHtml(r.label) + '</dt><dd class="mono">' + escapeHtml(r.detail) + '</dd>').join('') +
+    '</dl>';
+}
+function initStatus(){ $('#status-refresh').addEventListener('click', loadStatus); }
+
+/* ================= loaders map (lazy per tab) ================= */
+const LOADERS = {
+  'dashboard': loadDashboard,
+  'analytics': loadAnalytics,
+  'pageviews': loadPageviews,
+  'clicks': loadClicks,
+  'referrers': loadReferrers,
+  'daily': loadDaily,
+  'toppages': loadTopPages,
+  'devices': loadDevices,
+  'hero': loadHero,
+  'about': loadAbout,
+  'skills': () => crudSkills.load(),
+  'projects': loadProjects,
+  'services': () => crudServices.load(),
+  'plans': () => crudPlans.load(),
+  'testimonials': () => crudTestimonials.load(),
+  'blog': () => crudBlog.load(),
+  'faqs': () => crudFaqs.load(),
+  'media': loadMedia,
+  'social': () => crudSocial.load(),
+  'contact': loadContact,
+  'messages': loadMessages,
+  'subscribers': loadSubscribers,
+  'seo': loadSeo,
+  'identity': loadIdentity,
+  'admin-users': () => crudAdminUsers.load(),
+  'activity': loadActivity,
+  'password': null,
+  'backup': loadBackup,
+  'status': loadStatus,
+  'help': null
+};
+
+/* ================= boot ================= */
+async function boot(){
+  renderNav();
+  initSetupBanner();
+  initAuth();
+  initNav();
+  initModals();
+  initConfirm();
+  initGenericForm();
+  initHero(); initAbout();
+  crudSkills.init(); initProjects(); crudServices.init(); crudPlans.init();
+  crudTestimonials.init(); crudBlog.init(); crudFaqs.init();
+  initMedia(); crudSocial.init();
+  initSettings(); initMessages(); initSubscribers();
+  crudAdminUsers.init(); initActivity(); initPassword(); initStatus();
+  initPageviews(); initClicks();
+  $('#dash-refresh').addEventListener('click', refreshAll);
+  $('#analytics-refresh').addEventListener('click', loadAnalytics);
+  if (!sb){ showView(false); return; }
+  const session = await checkSession();
+  if (session){
+    showView(true);
+    await refreshAll();
+  } else {
+    showView(false);
+  }
+}
+document.addEventListener('DOMContentLoaded', boot);
+})();
+
+</script>
+</body>
+</html>
